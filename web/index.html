@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天堂地獄模擬器</title>
+<style>
+  :root {
+    --bg: #0f0d14;
+    --panel: #1a1722;
+    --border: #2d2838;
+    --text: #ece8f3;
+    --muted: #9a92aa;
+    --heaven: #f2c94c;
+    --purg: #b8a6ea;
+    --hell: #ff5a4e;
+    --wait: #7ec8e3;
+    --good: #6fd38f;
+    --bad: #ff7a70;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: radial-gradient(ellipse at 50% -10%, #2a2340 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.6;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+  .card {
+    width: min(640px, 100%);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  .progress { height: 4px; background: var(--border); }
+  .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--wait), var(--heaven)); transition: width .4s; }
+  .body { padding: 28px 28px 30px; }
+  .screen { animation: fadein .45s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } }
+
+  h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: 8px; text-align: center; }
+  .sub { text-align: center; color: var(--muted); margin: 0 0 24px; letter-spacing: 2px; }
+  .intro { font-size: 15px; color: #cfc8dc; margin: 0 0 22px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+
+  button, input {
+    font: inherit; color: var(--text); background: #221e2c;
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px;
+  }
+  input { font-size: 17px; }
+  input:focus { outline: 2px solid #5a4b8a; outline-offset: 1px; }
+  button { cursor: pointer; transition: background .15s, border-color .15s, transform .1s; }
+  button:hover:not(:disabled) { background: #2c2738; border-color: #4a425a; }
+  button:active:not(:disabled) { transform: scale(.98); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.primary { background: linear-gradient(90deg, #5a4b8a, #8a5a4b); border-color: #9a7ab0; font-weight: bold; }
+  button.primary:hover { filter: brightness(1.12); }
+  .wide { width: 100%; padding: 13px; font-size: 17px; }
+
+  .stage { display: inline-block; font-size: 13px; padding: 2px 12px; border-radius: 10px; background: #3d3360; color: #d8cff5; margin-bottom: 12px; }
+  .situation { font-size: 20px; margin: 0 0 22px; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choices button { text-align: left; padding: 14px 18px; font-size: 16px; }
+  .outcome { font-size: 15px; padding: 12px 16px; background: #13111a; border-left: 3px solid var(--wait); border-radius: 6px; margin: 0 0 22px; color: #d6d0e2; }
+
+  .verdict { text-align: center; padding: 6px 0 4px; }
+  .verdict .big { font-size: 48px; font-weight: bold; letter-spacing: 10px; }
+  .verdict.HEAVEN .big { color: var(--heaven); text-shadow: 0 0 24px rgba(242,201,76,.5); }
+  .verdict.PURGATORY .big { color: var(--purg); }
+  .verdict.HELL .big { color: var(--hell); text-shadow: 0 0 24px rgba(255,90,78,.5); }
+  .death { text-align: center; color: var(--muted); margin: 0 0 8px; }
+  h3 { margin: 26px 0 8px; font-size: 16px; }
+  .history { list-style: none; padding: 0; margin: 0; }
+  .history li { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .history .q { font-size: 12px; color: var(--muted); display: block; }
+  .history .a { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+  .pos { color: var(--good); } .neg { color: var(--bad); } .zero { color: var(--muted); }
+  .actions { display: flex; gap: 10px; margin-top: 24px; }
+  .actions button { flex: 1; }
+
+  @media (max-width: 520px) {
+    .body { padding: 22px 18px 24px; }
+    h1 { font-size: 24px; letter-spacing: 5px; }
+    .situation { font-size: 18px; }
+    .actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="progress"><i id="prog"></i></div>
+  <div class="body" id="main"></div>
+</div>
+
+<script src="journey.js"></script>
+<script>
+const REALM_NAME = { HEAVEN: '天堂', PURGATORY: '煉獄', HELL: '地獄' };
+const main = document.getElementById('main');
+const prog = document.getElementById('prog');
+let lifeId = null;
+let lastEnding = null;
+let lifeNo = 1;        // 第幾世（喝了孟婆湯轉世就 +1）
+let lastName = '';
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => (n >= 0 ? '+' : '') + n;
+const cls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : 'zero';
+
+async function post(path, params) {
+  const res = await fetch(path + '?' + new URLSearchParams(params), { method: 'POST' });
+  const data = await res.json();
+  if (data.error) { alert(data.error); return null; }
+  return data;
+}
+
+function showStart(reborn = false) {
+  prog.style.width = '0';
+  main.innerHTML = `<div class="screen">
+    <h1>天堂地獄模擬器</h1>
+    <p class="sub">${lifeNo > 1 ? `第 ${lifeNo} 世` : '善惡到頭終有報'}</p>
+    ${reborn ? `<p class="outcome">你喝下了孟婆湯，忘記了前世的一切，在一個陌生的家庭裡呱呱落地。這一世，你會成為怎樣的人？</p>` : ''}
+    <p class="intro">從童年到老年，你會從 100 個人生情境中隨機遇到 10 件事，每次人生都不一樣。每一個選擇都會被記下來，但你不會知道它們的分數。<br>
+    人生走完之後，你會踏上死後的旅程，接受審判——上天堂，還是下地獄？</p>
+    <label>你的名字<input id="name" maxlength="12" placeholder="無名氏" autocomplete="off"></label>
+    <button class="primary wide" id="born">出生 →</button>
+  </div>`;
+  const input = document.getElementById('name');
+  if (reborn) input.value = lastName;
+  input.focus();
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') startLife(); });
+  document.getElementById('born').onclick = startLife;
+}
+
+async function startLife() {
+  lastName = document.getElementById('name').value;
+  const data = await post('/api/life/start', { name: lastName });
+  if (!data) return;
+  lifeId = data.life;
+  showScenario(data.next, null);
+}
+
+function showScenario(sc, prevOutcome) {
+  prog.style.width = ((sc.step - 1) / sc.total * 100) + '%';
+  main.innerHTML = `<div class="screen">
+    ${prevOutcome ? `<p class="outcome">${esc(prevOutcome)}</p>` : ''}
+    <span class="stage">${esc(sc.stage)}・第 ${sc.step} / ${sc.total} 件事</span>
+    <p class="situation">${esc(sc.situation)}</p>
+    <div class="choices"></div>
+  </div>`;
+  const box = main.querySelector('.choices');
+  sc.choices.forEach((text, i) => {
+    const b = document.createElement('button');
+    b.textContent = text;
+    b.onclick = () => choose(i);
+    box.appendChild(b);
+  });
+}
+
+async function choose(option) {
+  main.querySelectorAll('.choices button').forEach(b => b.disabled = true);
+  const data = await post('/api/life/choose', { life: lifeId, option });
+  if (!data) return;
+  if (data.next) return showScenario(data.next, data.outcome);
+  // 人生結束：先播放死後旅程，再顯示結局
+  lastEnding = data;
+  prog.style.width = '100%';
+  afterJourney(await Journey.play(data.ending));
+}
+
+/** 旅程結束：喝了孟婆湯就轉世，否則顯示結局 */
+function afterJourney(result) {
+  if (result.choice === 'reincarnate') {
+    lifeNo++;
+    showStart(true);
+  } else {
+    showEnding(lastEnding, result);
+  }
+}
+
+function afterlifeSummary(r) {
+  if (!r) return '';
+  const parts = [];
+  if (r.hellDays) parts.push(`在地獄第 ${r.depth} 層受刑 ${r.hellDays} 天`);
+  if (r.purgDays) parts.push(`在煉獄山修行 ${r.purgDays} 天`);
+  parts.push('最後進入了天堂');
+  if (r.choice === 'stay') parts.push('並選擇不喝孟婆湯，留在了天堂');
+  return `<p class="death">死後，你${parts.join('，')}。</p>`;
+}
+
+function showEnding(data, result) {
+  const e = data.ending, s = e.soul;
+  main.innerHTML = `<div class="screen">
+    <p class="outcome">${esc(data.outcome)}</p>
+    <p class="death">${esc(s.name)}，享年 ${s.age} 歲。${lifeNo > 1 ? `（第 ${lifeNo} 世）` : ''}</p>
+    <div class="verdict ${s.realm}">
+      <div class="big">${REALM_NAME[s.realm]}</div>
+      <div>${esc(e.verdict)}　業力 <b class="${cls(s.karma)}">${fmt(s.karma)}</b></div>
+    </div>
+    ${afterlifeSummary(result)}
+    <h3>你這一生的選擇</h3>
+    <ul class="history">${e.history.map(h => `
+      <li><span class="q">${esc(h.stage)}｜${esc(h.situation)}</span>
+      <span class="a"><span>${esc(h.choice)}</span><b class="${cls(h.karma)}">${fmt(h.karma)}</b></span></li>`).join('')}
+    </ul>
+    <div class="actions">
+      <button id="replay">🎬 重看死後旅程</button>
+      <button class="primary" id="again">再活一次</button>
+    </div>
+  </div>`;
+  document.getElementById('replay').onclick = async () => afterJourney(await Journey.play(lastEnding.ending));
+  document.getElementById('again').onclick = () => { lifeNo++; showStart(false); };
+  window.scrollTo(0, 0);
+}
+
+showStart();
+</script>
+</body>
+</html>
