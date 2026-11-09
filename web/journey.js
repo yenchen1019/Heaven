@@ -9,7 +9,8 @@
   const SINS = ['驕傲', '嫉妒', '憤怒', '懶惰', '貪婪', '暴食', '色慾'];
 
   let root, stageEl, lineEl, nextEl, titleEl, srcEl, cv, g2d;
-  let skipping = false, muted = false;
+  let skipping = false, muted = false; // skipping：false | 'intro' | 'all'
+  let introBtn;
   let typingDone = null, clickWaiter = null;
   const timers = new Set();
   let audio = null;
@@ -133,7 +134,7 @@
       <canvas></canvas>
       <div class="jstage"></div>
       <div class="jhead"><div class="jtitle"></div><div class="jsrc"></div></div>
-      <div class="jtools"><button class="jmute">🔊 音效</button><button class="jskip">跳過 ⏭</button></div>
+      <div class="jtools"><button class="jmute">🔊 音效</button><button class="jskipintro">跳過開場 ⏩</button><button class="jskip">全部跳過 ⏭</button></div>
       <div class="jtext"><span class="jline"></span><span class="jnext">點一下繼續 ▼</span></div>`;
     document.body.appendChild(root);
     stageEl = root.querySelector('.jstage');
@@ -141,17 +142,19 @@
     nextEl = root.querySelector('.jnext');
     titleEl = root.querySelector('.jtitle');
     srcEl = root.querySelector('.jsrc');
+    introBtn = root.querySelector('.jskipintro');
     cv = root.querySelector('canvas');
     g2d = cv.getContext('2d');
 
     root.addEventListener('click', e => { if (!e.target.closest('.jtools')) advance(); });
-    root.querySelector('.jskip').onclick = skip;
+    root.querySelector('.jskip').onclick = () => skip('all');
+    root.querySelector('.jskipintro').onclick = () => skip('intro');
     const muteBtn = root.querySelector('.jmute');
     muteBtn.onclick = () => { muted = !muted; muteBtn.textContent = muted ? '🔇 靜音' : '🔊 音效'; };
     document.addEventListener('keydown', e => {
       if (!root.classList.contains('on')) return;
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); advance(); }
-      if (e.key === 'Escape') skip();
+      if (e.key === 'Escape') skip('all');
     });
     window.addEventListener('resize', resize);
   }
@@ -162,8 +165,10 @@
     else if (clickWaiter) clickWaiter();
   }
 
-  function skip() {
-    skipping = true;
+  /** mode：'intro' 只跳過每次都一樣的開場，'all' 跳過整段旅程 */
+  function skip(mode) {
+    if (skipping === 'all') return;
+    skipping = mode;
     if (typingDone) typingDone();
     if (clickWaiter) clickWaiter();
     timers.forEach(f => f());
@@ -1421,12 +1426,23 @@
       result.purgDays = purgDays(d.karma);
     }
 
-    const scenes = [sDeath, sWuchang, sGate, sRoad, sHome, sMirror, sJudge];
+    // 開場每次都一樣，可以單獨跳過；後面的場景依去處不同
+    const intro = [sDeath, sWuchang, sGate, sRoad, sHome, sMirror, sJudge];
+    const scenes = [];
     if (d.realm === 'HEAVEN') scenes.push(sNanTian, sReunion, sPeach, sApsara, sStars, sParadise);
     else if (d.realm === 'PURGATORY') scenes.push(sPurgatory, () => sEden(result.purgDays), sNanTian, sReunion, sParadise);
     else scenes.push(sHell, sMap, sTour, sLedger, sRise, sJizo, sNanTian, sReunion, sParadise);
 
+    introBtn.style.display = '';
     try {
+      try {
+        for (const s of intro) await s(d);
+      } catch (e) {
+        if (!(e instanceof SkipSignal) || skipping !== 'intro') throw e;
+        skipping = false;
+        typingDone = clickWaiter = null;
+      }
+      introBtn.style.display = 'none';
       for (const s of scenes) await s(d);
       result.choice = await sBridge(d);
     } catch (e) {
