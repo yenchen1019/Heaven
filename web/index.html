@@ -12,7 +12,6 @@
     --text: #ece8f3;
     --muted: #9a92aa;
     --heaven: #f2c94c;
-    --purg: #b8a6ea;
     --hell: #ff5a4e;
     --wait: #7ec8e3;
     --good: #6fd38f;
@@ -67,7 +66,6 @@
   .verdict { text-align: center; padding: 6px 0 4px; }
   .verdict .big { font-size: 48px; font-weight: bold; letter-spacing: 10px; }
   .verdict.HEAVEN .big { color: var(--heaven); text-shadow: 0 0 24px rgba(242,201,76,.5); }
-  .verdict.PURGATORY .big { color: var(--purg); }
   .verdict.HELL .big { color: var(--hell); text-shadow: 0 0 24px rgba(255,90,78,.5); }
   .death { text-align: center; color: var(--muted); margin: 0 0 8px; }
   h3 { margin: 26px 0 8px; font-size: 16px; }
@@ -95,7 +93,7 @@
 
 <script src="journey.js"></script>
 <script>
-const REALM_NAME = { HEAVEN: '天堂', PURGATORY: '煉獄', HELL: '地獄' };
+const REALM_NAME = { HEAVEN: '天堂', HELL: '地獄' };
 const main = document.getElementById('main');
 const prog = document.getElementById('prog');
 let lifeId = null;
@@ -178,13 +176,11 @@ function afterJourney(result) {
   }
 }
 
-function afterlifeSummary(r) {
+function afterlifeSummary(r, realm) {
   if (!r) return '';
-  const parts = [];
-  if (r.hellDays) parts.push(`在地獄第 ${r.depth} 層受刑 ${r.hellDays} 天`);
-  if (r.purgDays) parts.push(`在煉獄山修行 ${r.purgDays} 天`);
-  parts.push('最後進入了天堂');
-  if (r.choice === 'stay') parts.push('並選擇不喝孟婆湯，留在了天堂');
+  if (realm === 'HEAVEN') return '<p class="death">死後，聖彼得在《生命冊》上找到了你的名字。你走進珍珠門，在天堂得到了永遠的安息。</p>';
+  const parts = [`在地獄第 ${r.depth} 層受刑 ${r.hellDays} 天`, '刑滿後由地藏王菩薩帶出地獄'];
+  if (r.choice === 'stay') parts.push('因為不肯喝孟婆湯，跳進忘川河等待了一千年');
   return `<p class="death">死後，你${parts.join('，')}。</p>`;
 }
 
@@ -197,7 +193,7 @@ function showEnding(data, result) {
       <div class="big">${REALM_NAME[s.realm]}</div>
       <div>${esc(e.verdict)}　業力 <b class="${cls(s.karma)}">${fmt(s.karma)}</b></div>
     </div>
-    ${afterlifeSummary(result)}
+    ${afterlifeSummary(result, s.realm)}
     <h3>你這一生的選擇</h3>
     <ul class="history">${e.history.map(h => `
       <li><span class="q">${esc(h.stage)}｜${esc(h.situation)}</span>

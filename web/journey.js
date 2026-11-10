@@ -1,12 +1,12 @@
 // 死後旅程：人生結束後播放的過場動畫
-// 取材自民間信仰（《玉曆寶鈔》、十八層地獄、孟婆湯）、但丁《神曲》、古埃及《亡者之書》、《聖經・啟示錄》
+// 地獄取材自中國民間信仰（《玉曆寶鈔》、十八層地獄、地藏王、孟婆湯）
+// 天堂取材自西方故事（《聖經》、但丁《神曲・天堂篇》、希臘神話、散文詩〈彩虹橋〉）
 (function () {
-  const REALM_NAME = { HEAVEN: '天堂', PURGATORY: '煉獄', HELL: '地獄' };
-  const REALM_COLOR = { HEAVEN: '#f2c94c', PURGATORY: '#b8a6ea', HELL: '#ff4a3a' };
+  const REALM_NAME = { HEAVEN: '天堂', HELL: '地獄' };
+  const REALM_COLOR = { HEAVEN: '#f2c94c', HELL: '#ff4a3a' };
   const HELL_LEVELS = ['拔舌地獄', '剪刀地獄', '鐵樹地獄', '孽鏡地獄', '蒸籠地獄', '銅柱地獄',
     '刀山地獄', '冰山地獄', '油鍋地獄', '牛坑地獄', '石壓地獄', '舂臼地獄',
     '血池地獄', '枉死地獄', '磔刑地獄', '火山地獄', '石磨地獄', '刀鋸地獄'];
-  const SINS = ['驕傲', '嫉妒', '憤怒', '懶惰', '貪婪', '暴食', '色慾'];
 
   let root, stageEl, lineEl, nextEl, titleEl, srcEl, cv, g2d;
   let skipping = false, muted = false;
@@ -74,11 +74,6 @@
       @keyframes jsteam { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: .6; } 100% { opacity: 0; transform: translateY(-40px); } }
       #journey .jwindow { animation: jflicker 2.4s ease-in-out infinite; }
       @keyframes jflicker { 50% { opacity: .55; } }
-      #journey .mirror-text { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
-        justify-content: center; text-align: center; color: #0e1420; transition: opacity .4s; padding: 10px; box-sizing: border-box; }
-      #journey .mirror-text .ms { font-size: 15px; opacity: .7; letter-spacing: 3px; }
-      #journey .mirror-text .mc { font-size: 22px; font-weight: bold; margin: 8px 0; line-height: 1.4; }
-      #journey .mirror-text .mk { font-size: 30px; font-weight: bold; }
       #journey .jstamp { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(3); opacity: 0;
         font-size: min(22vw, 140px); font-weight: 900; letter-spacing: .2em; transition: transform .5s cubic-bezier(.2,1.6,.4,1), opacity .3s;
         pointer-events: none; white-space: nowrap; }
@@ -126,8 +121,8 @@
           <stop offset="0" stop-color="#2a1a1e"/><stop offset="1" stop-color="#4a3a3a"/></linearGradient>
         <linearGradient id="jdoor" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#e8dcc0"/></linearGradient>
-        <linearGradient id="jmount" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#6a5a80"/><stop offset="1" stop-color="#2a2238"/></linearGradient>
+        <linearGradient id="jpearl" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#f4eef8"/><stop offset=".7" stop-color="#e8f0fa"/><stop offset="1" stop-color="#f8e8f0"/></linearGradient>
         <radialGradient id="jgate" cx="50%" cy="60%" r="60%">
           <stop offset="0" stop-color="#5a1010"/><stop offset="1" stop-color="#050203"/></radialGradient>
       </defs></svg>
@@ -302,7 +297,6 @@
   function spawn(init) {
     switch (pmode) {
       case 'fog': return { k: 'blob', x: init ? R(-200, W) : -250, y: R(H * .35, H), r: R(120, 260), vx: R(.15, .5), vy: 0, a: R(.03, .08), c: '190,200,220' };
-      case 'mist': return { k: 'blob', x: init ? R(-200, W) : -250, y: R(H * .2, H), r: R(140, 280), vx: R(.1, .35), vy: 0, a: R(.04, .09), c: '210,190,230' };
       case 'petals': return { k: 'petal', x: R(-50, W), y: init ? R(0, H) : -20, vx: R(.3, 1), vy: R(.6, 1.5), r: R(4, 8), rot: R(0, 6), vr: R(-.04, .04), a: R(.6, .95), c: '210,30,45', sway: R(0, 6) };
       case 'embers': return { k: 'dot', x: R(0, W), y: init ? R(0, H) : H + 10, vx: R(-.4, .4), vy: -R(.8, 2.4), r: R(1, 3), a: R(.5, 1), c: Math.random() < .5 ? '255,140,40' : '255,80,30', sway: R(0, 6) };
       case 'light': return { k: 'dot', x: R(0, W), y: init ? R(0, H) : H + 10, vx: R(-.2, .2), vy: -R(.3, .9), r: R(1.5, 3.5), a: R(.4, .9), c: '255,240,190', sway: R(0, 6) };
@@ -315,7 +309,7 @@
     return null;
   }
 
-  const MAX = { fog: 18, mist: 22, petals: 70, embers: 110, light: 80, feathers: 26, dust: 60, stars: 120, snow: 110, blossom: 80 };
+  const MAX = { fog: 18, petals: 70, embers: 110, light: 80, feathers: 26, dust: 60, stars: 120, snow: 110, blossom: 80 };
 
   function setParticles(mode) {
     pmode = mode;
@@ -548,11 +542,31 @@
         }).join('')}
         <rect x="320" y="12" width="160" height="40" fill="#2a1a0a" stroke="#c9a040" stroke-width="2"/>
         <text x="400" y="33" font-size="22" fill="#e8c070" text-anchor="middle" dominant-baseline="middle" font-weight="bold" letter-spacing="6">孽鏡台</text>
-        <foreignObject x="270" y="120" width="260" height="240"><div xmlns="http://www.w3.org/1999/xhtml" class="mirror-text"></div></foreignObject>
+        <g class="mtext" style="transition:opacity .4s"></g>
       </svg>`);
-    const box = layer.querySelector('.mirror-text');
+    const box = layer.querySelector('.mtext');
     const ring = layer.querySelector('.mring');
-    await say('殿前立著一面巨大的銅鏡，鏡框上刻著五個字：');
+    // 用 SVG 文字畫在鏡面正中間，每列一行：[文字, 字級, 顏色, 粗體]
+    const setMirror = rows => {
+      const lh = r => r[1] * 1.4;
+      let y = 240 - rows.reduce((a, r) => a + lh(r), 0) / 2;
+      box.innerHTML = rows.map(([text, size, color, bold]) => {
+        const cy = y + lh([0, size]) / 2;
+        y += lh([0, size]);
+        return `<text x="400" y="${cy}" font-size="${size}" fill="${color}" text-anchor="middle" dominant-baseline="middle"${bold ? ' font-weight="bold"' : ''}>${esc(text)}</text>`;
+      }).join('');
+    };
+    // 長句切成每行最多 9 個字，標點不放在行首
+    const wrap = (text, n = 9) => {
+      const lines = [];
+      let cur = '';
+      for (const ch of text) {
+        if (cur.length >= n && !/[，。、！？」』）]/.test(ch)) { lines.push(cur); cur = ''; }
+        cur += ch;
+      }
+      return cur ? [...lines, cur] : lines;
+    };
+    await say('殿前立著一面巨大的銅鏡，鏡框上刻著七個字：');
     await say('「孽鏡台前無好人」。');
     await say('這面鏡子會照出你一生做過的每一件事，誰也騙不了它。');
     show('鏡子亮了起來……（點一下可以加快）');
@@ -560,8 +574,11 @@
       const col = h.karma > 0 ? '#f2c94c' : h.karma < 0 ? '#ff3a2a' : '#aab';
       box.style.opacity = 0;
       await wait(250);
-      box.innerHTML = `<div class="ms">${esc(h.stage)}</div><div class="mc">${esc(h.choice)}</div>
-        <div class="mk" style="color:${h.karma > 0 ? '#9a6a00' : h.karma < 0 ? '#b01010' : '#556'}">${fmt(h.karma)}</div>`;
+      setMirror([
+        [h.stage, 15, '#4a5468'],
+        ...wrap(h.choice).map(line => [line, 22, '#0e1420', true]),
+        [fmt(h.karma), 30, h.karma > 0 ? '#9a6a00' : h.karma < 0 ? '#b01010' : '#556', true]
+      ]);
       box.style.opacity = 1;
       ring.style.stroke = col;
       ring.style.opacity = .9;
@@ -571,7 +588,7 @@
     }
     box.style.opacity = 0;
     await wait(300);
-    box.innerHTML = `<div class="ms">一生業力總和</div><div class="mk" style="font-size:44px;color:${d.karma >= 0 ? '#9a6a00' : '#b01010'}">${fmt(d.karma)}</div>`;
+    setMirror([['一生業力總和', 15, '#4a5468'], [fmt(d.karma), 44, d.karma >= 0 ? '#9a6a00' : '#b01010', true]]);
     box.style.opacity = 1;
     await say('鏡中的畫面漸漸淡去。你這一生，已經全部被記錄下來了。');
   }
@@ -697,10 +714,9 @@
 
   const goodDeeds = d => d.history.filter(h => h.karma > 0);
   const badDeeds = d => d.history.filter(h => h.karma < 0);
-  // 和模擬器的規則一致：地獄每天平均贖罪 3 點，煉獄每天平均淨增 1.75 點
-  const hellDays = karma => Math.max(1, Math.ceil((-50 - karma) / 3));
-  const purgDays = karma => Math.max(1, Math.ceil((50 - karma) / 1.75));
-  const hellDepth = karma => clamp(Math.ceil((-karma - 50) / 10) + 1, 1, 18);
+  // 和模擬器的規則一致：業力低於 0 就下地獄，每天平均贖罪 3 點，回到 0 就刑滿
+  const hellDays = karma => Math.max(1, Math.ceil(-karma / 3));
+  const hellDepth = karma => clamp(Math.ceil(-karma / 10), 1, 18);
 
   /** 用 requestAnimationFrame 跑一段 0→1 的動畫 */
   async function animate(ms, onStep) {
@@ -729,18 +745,6 @@
     let c = '';
     for (let i = 0; i < 22; i++) c += `<circle cx="${(i * 41) % 820 - 10}" cy="${y + (i * 17 % 50)}" r="${50 + (i * 23 % 40)}" fill="${color}" opacity=".95"/>`;
     return c;
-  }
-
-  /** 仙鶴 */
-  function crane(x, y, s = 1, delay = 0) {
-    return `<g transform="translate(${x} ${y}) scale(${s})"><g class="jbob" style="animation-delay:${delay}s">
-      <path d="M-30,0 Q0,-14 34,-4 Q8,6 -30,0Z" fill="#fff"/>
-      <path d="M30,-4 Q52,-24 60,-34" stroke="#fff" stroke-width="4" fill="none"/>
-      <circle cx="61" cy="-35" r="5" fill="#fff"/><circle cx="62" cy="-39" r="3" fill="#e0302a"/>
-      <path d="M65,-35 l14,3" stroke="#d8b860" stroke-width="2"/>
-      <path d="M-8,-4 Q-20,-46 -48,-58 Q-26,-30 -14,-2Z" fill="#fff"/><path d="M-44,-56 l-6,-4" stroke="#222" stroke-width="5"/>
-      <path d="M-30,0 l-26,10" stroke="#ddd" stroke-width="3"/>
-    </g></g>`;
   }
 
   /** 小鬼 */
@@ -951,48 +955,101 @@
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">${HELL_ART[lv]()}${guards()}</svg>`);
   }
 
-  // ---------- 天堂（中國的天界） ----------
-  async function sNanTian() {
+  // ---------- 天堂（西方的天國） ----------
+  /** 天使：翅膀、白袍、光環，item 可以是 'harp' 或 'trumpet' */
+  function angel(x, y, s = 1, delay = 0, item = '') {
+    const hold = item === 'harp'
+      ? `<path d="M12,-34 L34,-34 Q40,-4 18,14 Z" fill="none" stroke="#e8b840" stroke-width="3"/>
+         ${[17, 22, 27].map(sx => `<line x1="${sx}" y1="-32" x2="${sx}" y2="${sx > 24 ? -4 : 6}" stroke="#f8e8b0" stroke-width="1"/>`).join('')}`
+      : item === 'trumpet'
+        ? `<path d="M10,-52 L58,-76 L64,-62 Z" fill="#f0c040" stroke="#b8902a"/><ellipse cx="61" cy="-69" rx="5" ry="9" fill="#ffe080" transform="rotate(-26 61 -69)"/>`
+        : '';
+    // s 是負數時只左右翻轉
+    return `<g transform="translate(${x} ${y}) scale(${s} ${Math.abs(s)})"><g class="jbob" style="animation-delay:${delay}s">
+      <path d="M-8,-48 Q-62,-92 -80,-28 Q-62,-40 -52,-8 Q-32,-30 -8,-20Z" fill="#fffdf6" stroke="#e8dcc0" stroke-width="1.5"/>
+      <path d="M8,-48 Q62,-92 80,-28 Q62,-40 52,-8 Q32,-30 8,-20Z" fill="#fffdf6" stroke="#e8dcc0" stroke-width="1.5"/>
+      <path d="M-14,-46 L-30,40 L30,40 L14,-46 Q0,-52 -14,-46Z" fill="#fff" stroke="#e0d4b8" stroke-width="1.5"/>
+      <circle cx="0" cy="-62" r="13" fill="#f6dcc0"/>
+      <path d="M-13,-62 Q-13,-80 0,-78 Q13,-80 13,-62 Q8,-72 0,-72 Q-8,-72 -13,-62Z" fill="#e8c060"/>
+      <ellipse cx="0" cy="-84" rx="15" ry="4" fill="none" stroke="#ffd860" stroke-width="3" filter="url(#jglow)"/>
+      ${hold}
+    </g></g>`;
+  }
+
+  /** 從畫面頂端放射出來的光芒 */
+  function sunRays(n = 16, alpha = .16) {
     let rays = '';
-    for (let i = 0; i < 16; i++) {
-      const a = i / 16 * Math.PI * 2, b = a + 0.12;
-      rays += `<polygon points="400,-40 ${400 + Math.cos(a) * 900},${-40 + Math.sin(a) * 900} ${400 + Math.cos(b) * 900},${-40 + Math.sin(b) * 900}" fill="rgba(255,250,220,.16)"/>`;
+    for (let i = 0; i < n; i++) {
+      const a = i / n * Math.PI * 2, b = a + 0.12;
+      rays += `<polygon points="400,-40 ${400 + Math.cos(a) * 900},${-40 + Math.sin(a) * 900} ${400 + Math.cos(b) * 900},${-40 + Math.sin(b) * 900}" fill="rgba(255,250,220,${alpha})"/>`;
     }
-    const studs = x0 => [0, 1, 2, 3].map(r => [0, 1, 2].map(c => `<circle cx="${x0 + 16 + c * 21}" cy="${215 + r * 40}" r="5" fill="#f0c860"/>`).join('')).join('');
-    const general = (x, flip) => `<g class="jbob" style="animation-delay:${flip ? 1 : 0}s">
-      <path d="M${x - 26},300 L${x - 40},400 L${x + 40},400 L${x + 26},300Z" fill="#c8a040" stroke="#8a6a20" stroke-width="2"/>
-      <rect x="${x - 30}" y="296" width="60" height="16" fill="#e8c860"/>
-      <circle cx="${x}" cy="278" r="18" fill="#f0d8b8"/>
-      <path d="M${x - 20},270 Q${x},240 ${x + 20},270Z" fill="#d8b040"/><path d="M${x},244 l0,-18" stroke="#e03030" stroke-width="4"/>
-      <line x1="${x + (flip ? -46 : 46)}" y1="210" x2="${x + (flip ? -46 : 46)}" y2="400" stroke="#8a6a3a" stroke-width="5"/>
-      <path d="M${x + (flip ? -46 : 46)},210 l-10,20 l20,0Z" fill="#d8dee8"/>
-      <path d="M${x + (flip ? -46 : 46)},226 q${flip ? 16 : -16},6 ${flip ? 18 : -18},18" stroke="#d8dee8" stroke-width="5" fill="none"/>
+    return `<g class="jrays">${rays}</g>`;
+  }
+
+  /** 聖彼得：白鬍子、金鑰匙、生命冊 */
+  function peter(x) {
+    return `<g class="jbob" style="animation-delay:.5s">
+      <path d="M${x - 30},300 L${x - 54},430 L${x + 54},430 L${x + 30},300 Z" fill="#3a5a9a" stroke="#24406e" stroke-width="2"/>
+      <path d="M${x - 24},302 L${x + 14},430 L${x + 54},430 L${x + 30},300Z" fill="#d0a040" opacity=".9"/>
+      <circle cx="${x}" cy="278" r="20" fill="#f0d0b0"/>
+      <path d="M${x - 19},282 Q${x},336 ${x + 19},282 Q${x},296 ${x - 19},282Z" fill="#f6f6f6"/>
+      <path d="M${x - 20},276 Q${x - 18},254 ${x},256 Q${x + 18},254 ${x + 20},276 Q${x},266 ${x - 20},276Z" fill="#eee"/>
+      <ellipse cx="${x}" cy="250" rx="22" ry="5" fill="none" stroke="#ffd860" stroke-width="3" filter="url(#jglow)"/>
+      <g transform="translate(${x - 50} 336) rotate(-35)" filter="url(#jglow)">
+        <circle r="9" fill="none" stroke="#f0c040" stroke-width="4"/><line x1="9" y1="0" x2="46" y2="0" stroke="#f0c040" stroke-width="4"/>
+        <path d="M36,0 v9 M44,0 v11" stroke="#f0c040" stroke-width="4"/></g>
+      <g transform="rotate(-8 ${x + 38} 334)"><rect x="${x + 14}" y="316" width="48" height="34" rx="2" fill="#8a2a2a" stroke="#f0c040" stroke-width="2"/>
+        <line x1="${x + 38}" y1="316" x2="${x + 38}" y2="350" stroke="#f0c040" stroke-width="1.5"/></g>
     </g>`;
-    const layer = scene('南天門', '中國神話・天庭', 'linear-gradient(#fff6d8, #f6dca0 35%, #d8b8d8 75%, #a898c8)', 'light',
+  }
+
+  /** 一扇珍珠做的拱門（左右兩片門可以打開） */
+  function pearlGate(x, y, w, h) {
+    const r = w / 2;
+    return `<rect x="${x}" y="${y - r}" width="${w}" height="${h + r}" fill="#fffef0" filter="url(#jbigglow)"/>
+      <path d="M${x},${y + h} L${x},${y} A${r},${r} 0 0,1 ${x + w},${y} L${x + w},${y + h}Z" fill="#fffde8"/>
+      <g class="jdoorL"><path d="M${x},${y + h} L${x},${y} A${r},${r} 0 0,1 ${x + r},${y - r} L${x + r},${y + h}Z" fill="url(#jpearl)" stroke="#d8c8d8" stroke-width="2"/></g>
+      <g class="jdoorR"><path d="M${x + r},${y + h} L${x + r},${y - r} A${r},${r} 0 0,1 ${x + w},${y} L${x + w},${y + h}Z" fill="url(#jpearl)" stroke="#d8c8d8" stroke-width="2"/></g>
+      <path d="M${x - 10},${y + h} L${x - 10},${y} A${r + 10},${r + 10} 0 0,1 ${x + w + 10},${y} L${x + w + 10},${y + h}" fill="none" stroke="#e8c060" stroke-width="8"/>`;
+  }
+
+  /** 碧玉城牆 */
+  function jasperWall(x, y, w, h) {
+    let bricks = '';
+    for (let r = 0; r < h / 30; r++) bricks += `<line x1="${x}" y1="${y + r * 30}" x2="${x + w}" y2="${y + r * 30}" stroke="rgba(255,255,255,.35)" stroke-width="1"/>`;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#9ad6c2" stroke="#e8c060" stroke-width="3"/>${bricks}
+      <rect x="${x - 4}" y="${y - 12}" width="${w + 8}" height="12" fill="#e8c060"/>`;
+  }
+
+  async function sGates() {
+    let steps = '';
+    for (let i = 0; i < 9; i++) {
+      const t = i / 8, y = 520 - t * 120, hw = 120 - t * 60;
+      steps += `<line x1="${400 - hw}" y1="${y}" x2="${400 + hw}" y2="${y}" stroke="rgba(230,190,90,${.45 + t * .5})" stroke-width="${5 - t * 2}"/>`;
+    }
+    const layer = scene('珍珠門', '《聖經・創世記》雅各的天梯 ＋《啟示錄》＋ 聖彼得守天門的傳說', 'linear-gradient(#fff6e0, #f8e6c0 35%, #d8d0f0 75%, #a8b8e8)', 'light',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        <g class="jrays">${rays}</g>
-        <rect x="320" y="190" width="160" height="210" fill="#fffef0" filter="url(#jbigglow)"/>
-        <rect x="320" y="190" width="160" height="210" fill="#fffde8"/>
-        <g class="jdoorL"><rect x="320" y="190" width="80" height="210" fill="#c8302a" stroke="#8a1a1a" stroke-width="2"/>${studs(320)}</g>
-        <g class="jdoorR"><rect x="400" y="190" width="80" height="210" fill="#c8302a" stroke="#8a1a1a" stroke-width="2"/>${studs(400)}</g>
-        <rect x="290" y="160" width="30" height="250" fill="#b8282a" stroke="#f0c860" stroke-width="3"/>
-        <rect x="480" y="160" width="30" height="250" fill="#b8282a" stroke="#f0c860" stroke-width="3"/>
-        <path d="M200,166 Q300,152 400,100 Q500,152 600,166 L575,180 L225,180 Z" fill="#e8b840" stroke="#a8781a" stroke-width="2"/>
-        <path d="M250,112 Q330,104 400,66 Q470,104 550,112 L532,124 L268,124 Z" fill="#e8b840" stroke="#a8781a" stroke-width="2"/>
-        <rect x="336" y="124" width="128" height="40" fill="#1a3a7a" stroke="#f0c860" stroke-width="3"/>
-        <text x="400" y="145" font-size="24" fill="#f8e090" text-anchor="middle" dominant-baseline="middle" font-weight="bold" letter-spacing="6">南天門</text>
-        ${general(220, false)}${general(580, true)}
-        ${crane(150, 120, 1, 0)}${crane(660, 90, -.8, .8)}
-        ${cloudBank(430)}
+        ${sunRays()}
+        ${jasperWall(60, 220, 260, 190)}${jasperWall(480, 220, 260, 190)}
+        ${pearlGate(330, 200, 140, 200)}
+        ${angel(170, 150, .8, 0, 'trumpet')}${angel(640, 130, -.8, .9, 'trumpet')}
+        ${peter(560)}
+        ${cloudBank(440)}
+        <path d="M280,520 L340,400 L460,400 L520,520Z" fill="rgba(255,250,225,.5)"/>
+        ${steps}
         <g class="jrise">${ghost(400, 520, 1.3)}</g>
       </svg>`);
+    await say('閻羅王合上生死簿：「你不屬於地府。看，有人來接你了。」');
     await say('一道溫暖的光從天上灑下來，你的身體變得好輕、好輕。');
     setParticles('feathers');
-    await say('你乘著雲往上飛，兩隻仙鶴在你身邊盤旋。');
-    await say('雲的盡頭，是一座金光閃閃的大門——南天門。兩位天將手持長戟，守在門口。');
+    tone(392, 1.6, { gain: 0.04, type: 'triangle' }); tone(523, 2, { gain: 0.04, type: 'triangle', delay: .5 });
+    await say('天使吹響號角，在你面前放下一道光的階梯。《創世記》裡，雅各曾在夢中看見這樣的天梯，天使在上面上上下下。');
+    await say('階梯的盡頭是一道發光的大門。《啟示錄》說，天城的十二道門，每一道都是一整顆珍珠。');
+    await say('門前站著一位白鬍子老人，手裡拿著金鑰匙——是聖彼得。傳說耶穌把「天國的鑰匙」交給了他。');
+    await say('他翻開厚厚的《生命冊》，找到了你的名字，笑著點點頭：「歡迎回家。」');
     layer.querySelector('svg').classList.add('open');
     chime();
-    await say('天將看了看你，側身讓出了路：「請進。」朱紅色的大門，緩緩打開了。');
+    await say('珍珠門緩緩打開了。');
   }
 
   async function sReunion() {
@@ -1001,15 +1058,17 @@
       const c = ['#ff9ab0', '#ffd36a', '#ffffff', '#c9a6ff'][i % 4];
       flowers += `<circle cx="${(i * 97) % 800}" cy="${400 + (i * 53) % 115}" r="${3 + (i % 3)}" fill="${c}"/>`;
     }
-    scene('重逢', '天界', 'linear-gradient(#fff1d0, #ffe2b0 35%, #bfe0a0 70%, #86b870)', 'light',
+    const rainbow = ['#ff8a8a', '#ffc070', '#fff07a', '#8ae08a', '#7ac0ff', '#b08aff'].map((c, i) =>
+      `<path d="M${380 + i * 9},372 A${210 - i * 9},${170 - i * 9} 0 0,1 ${800 - i * 9},372" fill="none" stroke="${c}" stroke-width="9" opacity=".7"/>`).join('');
+    scene('彩虹橋', '散文詩〈彩虹橋〉', 'linear-gradient(#fff1d0, #ffe2b0 35%, #bfe0a0 70%, #86b870)', 'light',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
         <circle cx="640" cy="90" r="60" fill="#fff6c0" filter="url(#jbigglow)"/>
+        ${rainbow}
         <path d="M0,360 Q200,300 420,350 T800,330 L800,520 L0,520Z" fill="#a8d488"/>
         <path d="M0,410 Q260,370 520,400 T800,390 L800,520 L0,520Z" fill="#8cc070"/>
         ${flowers}
         <rect x="110" y="250" width="22" height="160" fill="#8a6a4a"/>
         <circle cx="120" cy="230" r="70" fill="#7ab060"/><circle cx="70" cy="262" r="45" fill="#6aa050"/><circle cx="172" cy="258" r="50" fill="#88c070"/>
-        ${[0, 1, 2, 3, 4, 5].map(i => `<circle cx="${80 + i * 18}" cy="${210 + (i % 3) * 25}" r="6" fill="#ffd040"/>`).join('')}
         ${ghost(290, 455, 1.1)}
         ${ghost(530, 445, 1.05, '255,226,190')}${ghost(610, 435, 0.9, '255,236,210')}${ghost(690, 450, 1.1, '255,220,200')}
         <g filter="url(#jglow)"><g class="jbob" style="animation-delay:.6s">
@@ -1019,57 +1078,66 @@
         </g></g>
       </svg>`);
     await say('門後是一片看不到盡頭的草原，空氣裡有你最喜歡的味道。');
-    await say('遠遠地，有人在向你揮手。');
-    await say('是那些比你先離開的人。他們看起來年輕又健康，好像從來沒有老過。');
-    await say('連小時候養的那隻狗，也搖著尾巴朝你飛奔過來。');
+    await say('遠遠地，有人在向你揮手。是那些比你先離開的人，他們看起來年輕又健康，好像從來沒有老過。');
+    await say('草原的另一頭架著一道彩虹。西方有一首散文詩說：寵物離開人世以後，會在彩虹橋邊的草原上奔跑，等主人來。');
+    await say('小時候養的那隻狗認出了你，搖著尾巴朝你飛奔過來。');
     await say('「我們一直在等你。」');
   }
 
-  async function sPeach() {
-    let peaches = '';
-    for (let i = 0; i < 14; i++) {
-      const x = 560 + Math.cos(i * 2.4) * (40 + (i * 13) % 70), y = 170 + Math.sin(i * 2.4) * (30 + (i * 7) % 50);
-      peaches += `<circle cx="${x}" cy="${y}" r="13" fill="#ffa0b0"/><circle cx="${x - 4}" cy="${y - 4}" r="5" fill="#ffd0d8"/><path d="M${x},${y - 13} q4,-6 10,-6" stroke="#5a9a4a" stroke-width="3" fill="none"/>`;
-    }
-    const lotus = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="26" ry="8" fill="#5aa86a"/><path d="M${x - 10},${y - 2} Q${x},${y - 30} ${x + 10},${y - 2}Z" fill="#ffb8d0"/><path d="M${x - 18},${y - 2} Q${x - 12},${y - 22} ${x - 2},${y - 4}Z M${x + 18},${y - 2} Q${x + 12},${y - 22} ${x + 2},${y - 4}Z" fill="#ffd0e0"/>`;
-    scene('瑤池蟠桃會', '中國神話・西王母', 'linear-gradient(#fdf0f4, #f8e0e8 40%, #d8f0e8 75%, #b8e0d8)', 'light',
+  async function sCity() {
+    const FRUIT = ['#ff6a6a', '#ffb040', '#ffe040', '#8ad050', '#40c0a0', '#50a0ff', '#8a70ff', '#e070d0', '#ff8ab0', '#ffd0a0', '#c0f080', '#a0e0ff'];
+    const tree = (x, y) => `<rect x="${x - 8}" y="${y - 70}" width="16" height="74" fill="#8a6a3a"/>
+      <circle cx="${x}" cy="${y - 100}" r="52" fill="#6ab860"/><circle cx="${x - 34}" cy="${y - 80}" r="30" fill="#5aa850"/><circle cx="${x + 34}" cy="${y - 82}" r="32" fill="#78c468"/>
+      ${FRUIT.map((c, i) => `<circle cx="${x + Math.cos(i * 0.52) * (24 + (i % 3) * 12)}" cy="${y - 96 + Math.sin(i * 0.52) * (18 + (i % 2) * 10)}" r="6" fill="${c}"/>`).join('')}`;
+    const towers = [[150, 120, 60], [250, 80, 50], [340, 50, 60], [460, 60, 52], [550, 90, 56], [650, 130, 54]].map(([x, top, w]) =>
+      `<rect x="${x - w / 2}" y="${top}" width="${w}" height="${230 - top}" fill="#f6d870" stroke="#d8a830" stroke-width="2"/>
+       <path d="M${x - w / 2},${top} Q${x},${top - w * .9} ${x + w / 2},${top}Z" fill="#ffe8a0" stroke="#d8a830" stroke-width="2"/>
+       ${[0, 1, 2].map(k => `<rect class="jwindow" style="animation-delay:${(x + k) % 7 / 3}s" x="${x - 6}" y="${top + 20 + k * 40}" width="12" height="22" rx="6" fill="#fffbe8"/>`).join('')}`).join('');
+    const gate = x => `<path d="M${x - 26},360 L${x - 26},314 A26,26 0 0,1 ${x + 26},314 L${x + 26},360Z" fill="url(#jpearl)" stroke="#e8c060" stroke-width="3"/>`;
+    scene('新耶路撒冷', '《聖經・啟示錄》第 21–22 章', 'linear-gradient(#fffaf0, #fff0c8 40%, #ffe6b0 70%, #e8d0a0)', 'light',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        <rect x="548" y="220" width="24" height="200" fill="#8a5a3a"/>
-        <circle cx="560" cy="180" r="110" fill="#8ac878"/><circle cx="490" cy="210" r="60" fill="#7ab868"/><circle cx="640" cy="200" r="70" fill="#98d088"/>
-        ${peaches}
-        <ellipse cx="260" cy="430" rx="230" ry="50" fill="#7ad0d0" opacity=".9"/>
-        <path class="jwave" d="M60,430 Q160,420 260,432 T460,428" stroke="#e8ffff" stroke-width="2" fill="none"/>
-        ${lotus(160, 430)}${lotus(260, 445)}${lotus(360, 425)}
-        <rect x="430" y="400" width="320" height="18" fill="#b8302a"/><rect x="450" y="418" width="10" height="60" fill="#8a1a1a"/><rect x="720" y="418" width="10" height="60" fill="#8a1a1a"/>
-        ${[480, 540, 600, 660, 710].map((x, i) => `<ellipse cx="${x}" cy="398" rx="20" ry="6" fill="#fff"/><circle cx="${x}" cy="390" r="${i % 2 ? 8 : 6}" fill="${i % 2 ? '#ffa0b0' : '#f8d080'}"/>`).join('')}
-        ${ghost(470, 390, .9, '255,220,235')}${ghost(700, 390, .9, '255,236,210')}${ghost(590, 380, .8)}
-        ${crane(150, 150, .9, .4)}
+        <ellipse cx="400" cy="150" rx="320" ry="130" fill="#fffbe0" filter="url(#jbigglow)"/>
+        ${towers}
+        ${jasperWall(70, 230, 660, 130)}
+        ${gate(220)}${gate(400)}${gate(580)}
+        <path d="M380,360 L420,360 Q470,440 560,520 L240,520 Q330,440 380,360Z" fill="#bfe8ff" stroke="#e8f8ff" stroke-width="2"/>
+        <path class="jwave" d="M400,370 Q380,430 330,520" stroke="#fff" stroke-width="2" fill="none"/>
+        <path class="jwave" style="animation-delay:-1s" d="M400,370 Q420,430 470,520" stroke="#fff" stroke-width="2" fill="none"/>
+        <path d="M0,400 L380,360 Q330,440 240,520 L0,520Z M800,400 L420,360 Q470,440 560,520 L800,520Z" fill="#e8c860" opacity=".55"/>
+        ${tree(150, 500)}${tree(650, 500)}
+        ${ghost(300, 500, .8)}
       </svg>`);
     chime();
-    await say('西王母在瑤池畔擺下了蟠桃宴，邀請新來的你一起入席。');
-    await say('傳說蟠桃園裡的桃子，三千年一開花、三千年一結果，吃了就能長生不老。');
-    await say('神仙們舉杯向你道賀。你咬了一口蟠桃，甜到了心裡。');
+    await say('穿過草原，一座發光的城出現在眼前——新耶路撒冷。');
+    await say('《啟示錄》這樣描寫它：城牆是碧玉造的，城是純金的，好像明淨的玻璃；連街道都是用精金鋪成的。');
+    await say('城裡不需要太陽，也不需要月亮，因為神的榮光照亮了一切。');
+    await say('一條明亮如水晶的生命河從城中流出。河的兩岸長著生命樹，一年結十二次果子，每個月都有新的果實。');
+    await say('你摘下一顆果子。咬下去的那一刻，你身上最後一點疲憊也消失了。');
   }
 
-  async function sApsara() {
-    const fairy = (x, y, s, c, d) => `<g transform="translate(${x} ${y}) scale(${s})"><g class="jbob" style="animation-delay:${d}s">
-      <path d="M-70,10 Q-20,-20 30,0 Q80,20 120,-10" stroke="${c}" stroke-width="6" fill="none" opacity=".8"/>
-      <path d="M-60,30 Q0,10 40,24 Q90,40 130,20" stroke="#fff3a0" stroke-width="4" fill="none" opacity=".8"/>
-      <path d="M-30,0 Q0,-14 40,-6 Q10,14 -30,0Z" fill="#fff0e0"/>
-      <path d="M-30,0 Q-50,8 -70,4 Q-48,-6 -30,-4Z" fill="${c}"/>
-      <circle cx="46" cy="-12" r="11" fill="#fbe0c8"/><path d="M40,-22 q8,-10 16,0" fill="#2a2a2a"/>
-      <path d="M50,-4 L70,-30" stroke="#fbe0c8" stroke-width="4"/><circle cx="72" cy="-34" r="7" fill="#ff9ab8"/>
-    </g></g>`;
-    scene('天女散花', '《維摩詰經》＋ 敦煌飛天', 'linear-gradient(#3a4a9a, #8a7ac8 45%, #e8b8d8 80%, #fff0e0)', 'blossom',
+  async function sChoir() {
+    const layer = scene('天使詩班', '《聖經・以賽亞書》＋《啟示錄》', 'linear-gradient(#5a6ab8, #9a8ad8 40%, #f0c8e0 78%, #fff4e4)', 'feathers',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
-        ${fairy(200, 140, 1.3, '#4ab8a8', 0)}${fairy(560, 100, 1.1, '#e86a8a', .8)}${fairy(420, 260, 1.2, '#f0a030', 1.5)}
-        ${cloudBank(470, '#fff6fa')}
+        <ellipse cx="400" cy="60" rx="260" ry="80" fill="#fff8e0" opacity=".5" filter="url(#jbigglow)"/>
+        ${cloudBank(250, '#fff6fa')}
+        ${angel(110, 230, .9, 0, 'harp')}${angel(250, 180, 1, .6, 'harp')}${angel(550, 180, -1, 1.2, 'harp')}${angel(690, 230, -.9, .3, 'harp')}
+        ${angel(400, 150, .8, .9, 'trumpet')}
+        ${cloudBank(470, '#fff')}
+        <g class="jhalo" style="opacity:0;transition:opacity 1.5s">
+          <path d="M374,420 L360,486 L440,486 L426,420 Q400,410 374,420Z" fill="#fff" stroke="#e8dcc0" stroke-width="2"/>
+          <ellipse cx="400" cy="378" rx="18" ry="5" fill="none" stroke="#ffd860" stroke-width="4" filter="url(#jglow)"/>
+        </g>
         ${ghost(400, 470, .9)}
       </svg>`);
-    tone(587, 2, { gain: 0.03, type: 'triangle' }); tone(784, 2, { gain: 0.03, type: 'triangle', delay: .4 });
-    await say('空中傳來仙樂。天女們披著長長的彩帶飛舞，把花瓣撒向四方。');
-    await say('《維摩詰經》說：花瓣落在放下執念的人身上會滑落；落在心有掛礙的人身上，就會黏住。');
-    await say('你低頭一看——身上一片花瓣都沒有沾上。');
+    const sing = () => [[523, 659, 784], [587, 740, 880], [523, 659, 784]].forEach((ch, i) =>
+      ch.forEach(f => tone(f, 1.4, { gain: 0.025, type: 'triangle', delay: i * 1.1 })));
+    sing();
+    await say('空中傳來歌聲。成千上萬的天使站在雲上，彈著豎琴。');
+    await say('他們齊聲唱著：「聖哉！聖哉！聖哉！」——這是《以賽亞書》和《啟示錄》裡，天使日夜不停的讚美。');
+    layer.querySelector('.jhalo').style.opacity = 1;
+    chime();
+    await say('一位天使為你披上潔白的長袍。你的頭上，也亮起了一圈光環。');
+    await say('你發現，自己竟然也會唱這首歌。');
   }
 
   async function sStars(d) {
@@ -1085,16 +1153,16 @@
       `<line class="cl" x1="${pts[i].x}" y1="${pts[i].y}" x2="${p.x}" y2="${p.y}" stroke="rgba(255,240,200,.6)" stroke-width="1.5" style="opacity:0;transition:opacity 1s"/>`).join('');
     const stars = pts.map(p =>
       `<circle class="cs" cx="${p.x}" cy="${p.y}" r="${p.r}" fill="#fff6d0" filter="url(#jglow)" style="opacity:0;transition:opacity .8s"/>`).join('');
-    const layer = scene('善念的星宿', '天界', 'linear-gradient(#070a22, #1c1840 60%, #3a2856)', 'stars',
+    const layer = scene('你的星座', '希臘神話・星座傳說', 'linear-gradient(#070a22, #1c1840 60%, #3a2856)', 'stars',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
         ${lines}${stars}
-        <text class="cname" x="400" y="400" font-size="32" fill="#ffe9a8" text-anchor="middle" letter-spacing="8" filter="url(#jglow)" style="opacity:0;transition:opacity 1.5s">${esc(d.name)}星</text>
+        <text class="cname" x="400" y="400" font-size="32" fill="#ffe9a8" text-anchor="middle" letter-spacing="8" filter="url(#jglow)" style="opacity:0;transition:opacity 1.5s">${esc(d.name)}座</text>
         <path d="M0,470 Q400,430 800,470 L800,520 L0,520Z" fill="#fff" opacity=".12"/>
-        ${ghost(160, 490, .7)}${ghost(220, 495, .6, '255,236,250')}
+        ${angel(150, 490, .6, 0)}${ghost(230, 495, .6)}
       </svg>`);
     const cs = layer.querySelectorAll('.cs'), cl = layer.querySelectorAll('.cl');
-    await say('夜晚，太白金星帶你來到銀河邊。');
-    await say('「你看，」他捋著白鬍子說，「你在人間做過的每一件好事，都會變成天上的一顆星。」');
+    await say('夜晚，你的守護天使帶你飛到了星空裡。');
+    await say('「你看，」天使說，「你在人間做過的每一件好事，都變成了天上的一顆星。」');
     for (let i = 0; i < n; i++) {
       cs[i].style.opacity = 1;
       if (i > 0) cl[i - 1].style.opacity = 1;
@@ -1104,113 +1172,43 @@
     }
     layer.querySelector('.cname').style.opacity = 1;
     chime();
-    await say(`${n} 顆星連成了一個星宿。從今以後，它就叫做「${d.name}星」。`);
+    await say(`${n} 顆星連成了一個星座。就像希臘神話裡被放上夜空的英雄，它從此叫做「${d.name}座」。`);
     await say('每當人間有人抬頭看見它，心裡就會湧起一點點想做好事的勇氣。');
   }
 
-  async function sParadise() {
-    const island = (x, y, w, i) => `<g class="jbob" style="animation-delay:${i * .7}s">
-      <path d="M${x - w},${y} Q${x},${y + w * .9} ${x + w},${y} Z" fill="#b89a78"/>
-      <ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w * .16}" fill="#7cc06a"/>
-      <rect x="${x - w * .43}" y="${y - w * .14}" width="${w * .06}" height="${w * .16}" fill="#7a5a3a"/>
-      <circle cx="${x - w * .4}" cy="${y - w * .25}" r="${w * .2}" fill="#5aa85a"/>
-      <rect x="${x + w * .1}" y="${y + 2}" width="${w * .12}" height="${w * 1.2}" fill="rgba(225,242,255,.6)"/>
-    </g>`;
-    const pavilion = (x, y) => `<g class="jbob" style="animation-delay:.7s">
-      <rect x="${x - 28}" y="${y - 44}" width="6" height="44" fill="#c8302a"/><rect x="${x + 22}" y="${y - 44}" width="6" height="44" fill="#c8302a"/>
-      <path d="M${x - 50},${y - 44} Q${x},${y - 56} ${x},${y - 78} Q${x},${y - 56} ${x + 50},${y - 44} Z" fill="#e8b840" stroke="#a8781a"/>
-      <path d="M${x - 36},${y - 66} Q${x},${y - 74} ${x},${y - 94} Q${x},${y - 74} ${x + 36},${y - 66} Z" fill="#e8b840" stroke="#a8781a"/>
-    </g>`;
-    scene('天宮的日子', '中國神話・天庭', 'linear-gradient(#bfe4ff, #e8f4ff 45%, #fff0d8 75%, #ffd8e4)', 'feathers',
-      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        ${['#ff8a8a', '#ffc070', '#fff07a', '#8ae08a', '#7ac0ff', '#b08aff'].map((c, i) =>
-          `<path d="M60,440 A340,320 0 0,1 740,440" fill="none" stroke="${c}" stroke-width="10" opacity=".35" transform="translate(0 ${i * 10})"/>`).join('')}
-        ${island(200, 210, 90, 0)}${island(570, 160, 110, 1)}${island(410, 330, 80, 2)}${island(690, 320, 60, 3)}
-        ${pavilion(585, 158)}
-        ${crane(330, 110, .8, .3)}
-        ${ghost(180, 200, .45, '255,236,210')}${ghost(420, 322, .45)}${ghost(455, 322, .4, '255,226,190')}
-        ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<ellipse cx="${(i * 131) % 800}" cy="${475 + (i % 3) * 14}" rx="${80 + (i % 3) * 30}" ry="26" fill="#fff" opacity=".85"/>`).join('')}
-      </svg>`);
-    chime();
-    await say('在天上，沒有病痛，沒有飢餓，也沒有眼淚。');
-    await say('你可以在雲上的亭子裡下棋、在仙山之間散步，或是學一樣一直想學、卻沒時間學的樂器。');
-    await say('偶爾，你會趴在雲朵邊緣，偷偷往人間看。');
-    await say('「天上一日，人間一年。」你在天上過了短短幾十天，人間已經過了好幾十年。');
-    await say('你看著家人長大、變老，然後一個一個來到這裡，和你團聚。');
-  }
-
-  // ---------- 煉獄 ----------
-  async function sPurgatory(d) {
-    let terraces = '', souls = '';
-    const terraceY = i => 450 - i * 52;
+  /** 但丁《天堂篇》的最高天：所有得救的靈魂坐在一朵光的玫瑰上 */
+  async function sRose() {
+    let tiers = '';
     for (let i = 0; i < 7; i++) {
-      const y = terraceY(i), hw = 70 + (y - 90) / 410 * 250;
-      terraces += `<path d="M${400 - hw},${y} Q400,${y + 20} ${400 + hw},${y}" stroke="rgba(255,230,210,.45)" stroke-width="3" fill="none"/>
-        <text x="${400 + hw + 10}" y="${y + 4}" font-size="14" fill="rgba(255,235,220,.75)">第${i + 1}層・${SINS[i]}</text>`;
-      for (let k = 0; k < 4; k++) souls += `<circle cx="${400 - hw * .8 + k * hw * .5 + (i * 13 % 20)}" cy="${y + 8}" r="3" fill="rgba(230,220,255,.5)"/>`;
+      const cy = 280 + i * 30, rx = 110 + i * 46, ry = 26 + i * 9, count = 12 + i * 4;
+      tiers += `<ellipse cx="400" cy="${cy}" rx="${rx}" ry="${ry}" fill="rgba(255,240,220,${.06 + i * .02})" stroke="rgba(255,230,180,.5)" stroke-width="1.5"/>`;
+      for (let k = 0; k < count; k++) {
+        const a = k / count * Math.PI * 2, px = 400 + Math.cos(a) * rx, py = cy + Math.sin(a) * ry;
+        const rot = Math.atan2(Math.sin(a) * ry, Math.cos(a) * rx) * 180 / Math.PI + 90;
+        tiers += `<ellipse cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" rx="9" ry="16" fill="${k % 2 ? '#fff4f0' : '#ffe0e8'}" opacity="${.55 + i * .06}" transform="rotate(${rot.toFixed(0)} ${px.toFixed(1)} ${py.toFixed(1)})"/>
+          <circle cx="${px.toFixed(1)}" cy="${(py - 6).toFixed(1)}" r="2.5" fill="#fffbe8" filter="url(#jglow)"/>`;
+      }
     }
-    const layer = scene('煉獄山', '但丁《神曲・煉獄篇》', 'linear-gradient(#262040, #4a3a5c 50%, #7a5868)', 'mist',
+    let rays = '';
+    for (let i = 0; i < 18; i++) {
+      const a = i / 18 * Math.PI * 2, b = a + 0.08;
+      rays += `<polygon points="400,190 ${400 + Math.cos(a) * 700},${190 + Math.sin(a) * 700} ${400 + Math.cos(b) * 700},${190 + Math.sin(b) * 700}" fill="rgba(255,240,190,.1)"/>`;
+    }
+    scene('天上的玫瑰', '但丁《神曲・天堂篇》＋《聖經・啟示錄》', 'radial-gradient(circle at 50% 35%, #fff0c0, #e8b860 35%, #7a4a20 75%, #2a1408)', 'light',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        <circle cx="400" cy="70" r="70" fill="#ffe8a0" opacity=".55" filter="url(#jbigglow)"/>
-        <path d="M60,510 L330,96 Q400,40 470,96 L740,510 Z" fill="url(#jmount)"/>
-        ${terraces}${souls}
-        <path d="M370,510 L370,478 A30,30 0 0,1 430,478 L430,510 Z" fill="#1a1426" stroke="#c9a0e0" stroke-width="2"/>
-        <text class="jday" x="776" y="30" font-size="22" fill="#f0e6ff" font-weight="bold" text-anchor="end"></text>
-        <circle class="jme" cx="400" cy="495" r="8" fill="#fff" filter="url(#jglow)"/>
+        <g style="transform-box:view-box;transform-origin:400px 190px;animation:jspin 90s linear infinite">${rays}</g>
+        ${tiers}
+        <circle cx="400" cy="190" r="90" fill="#fffbe8" filter="url(#jbigglow)"/>
+        <circle cx="400" cy="190" r="34" fill="#fff"/>
+        ${ghost(470, 482, .55)}${ghost(430, 486, .5, '255,236,210')}${ghost(510, 484, .5, '255,226,190')}
       </svg>`);
-    const me = layer.querySelector('.jme'), dayEl = layer.querySelector('.jday');
-    const total = purgDays(d.karma);
-    let curY = 495;
-    const climbTo = async (y, dayFrom, dayTo, ms) => {
-      const y0 = curY;
-      await animate(ms, t => {
-        const e = 1 - Math.pow(1 - t, 2);
-        me.setAttribute('cy', y0 + (y - y0) * e);
-        me.setAttribute('cx', 400 + Math.sin((y0 + (y - y0) * e) / 18) * 30);
-        dayEl.textContent = `第 ${Math.round(dayFrom + (dayTo - dayFrom) * t)} 天`;
-      });
-      curY = y;
-    };
-    await say('你被帶到一座高聳入雲的山腳下，山頂閃著金色的光。');
-    await say('但丁在《神曲》裡寫道：煉獄山有七層平台，對應七種罪——驕傲、嫉妒、憤怒、懶惰、貪婪、暴食、色慾。');
-    await say('靈魂要一層一層往上爬，在每一層洗去對應的罪。爬到山頂，就能進入天界。');
-    const bad = badDeeds(d);
-    for (let i = 0; i < bad.length; i++) {
-      const t = Math.min(6, Math.floor((i + 1) * 7 / (bad.length + 1)));
-      const dayFrom = Math.round(total * i / (bad.length + 1)), dayTo = Math.round(total * (i + 1) / (bad.length + 1));
-      show(`第 ${t + 1} 層・${SINS[t]}：你在這裡洗去了「${bad[i].choice}」`);
-      await climbTo(terraceY(t) + 4, dayFrom, dayTo, 1300);
-      tone(392 + t * 40, 0.6, { gain: 0.03, type: 'triangle' });
-      await wait(1300, true);
-    }
-    show('繼續往上爬……');
-    await climbTo(90, Math.round(total * bad.length / (bad.length + 1)), total, 2200);
     chime();
-    await say(`第 ${total} 天，你終於爬上了山頂。`);
-  }
-
-  async function sEden(days) {
-    let trees = '';
-    for (let i = 0; i < 9; i++) {
-      const x = 40 + i * 92, y = 250 + (i % 3) * 12, c = ['#6aa858', '#7ab868', '#5a9850'][i % 3];
-      trees += `<rect x="${x - 6}" y="${y}" width="12" height="70" fill="#7a5a3a"/><circle cx="${x}" cy="${y - 10}" r="${34 + (i % 2) * 8}" fill="${c}"/>`;
-    }
-    scene('地上樂園', '但丁《神曲・煉獄篇》', 'linear-gradient(#e0f2d0, #f8f2c8 45%, #b8e0c8)', 'light',
-      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        <rect x="0" y="300" width="800" height="220" fill="#a8d890"/>
-        ${trees}
-        <path d="M0,360 Q200,330 400,380 T800,360" stroke="#7ac0e8" stroke-width="30" fill="none" opacity=".85"/>
-        <path class="jwave" d="M0,360 Q200,330 400,380 T800,360" stroke="#e8f6ff" stroke-width="2" fill="none"/>
-        <path d="M0,465 Q250,435 420,480 T800,455" stroke="#f0c860" stroke-width="30" fill="none" opacity=".85"/>
-        <path class="jwave" d="M0,465 Q250,435 420,480 T800,455" stroke="#fff8d8" stroke-width="2" fill="none"/>
-        <text x="40" y="340" font-size="17" fill="#2a5a7a" font-weight="bold">勒特河（遺忘之河）</text>
-        <text x="560" y="438" font-size="17" fill="#7a5a10" font-weight="bold">歐諾埃河（善憶之河）</text>
-        ${ghost(420, 432, 1)}
-      </svg>`);
-    await say('山頂是一座美麗的花園，但丁稱它為「地上樂園」。');
-    await say('這裡有兩條河。喝下勒特河的水，你會忘記自己犯過的錯；');
-    await say('喝下歐諾埃河的水，你會重新想起自己做過的每一件好事。');
-    await say(`經過 ${days} 天的修行，你的靈魂終於乾乾淨淨，可以升上天界了。`);
+    await say('最後，你來到了天堂的最高處。');
+    await say('但丁在《神曲・天堂篇》的結尾寫道：所有得救的靈魂，都坐在一朵巨大的光之玫瑰上，一層層的花瓣，就是一排排的座位。');
+    await say('玫瑰的中心，是一道比太陽還亮、卻一點也不刺眼的光。');
+    await say('《啟示錄》說：神要擦去他們一切的眼淚；不再有死亡，也不再有悲哀、哭號、疼痛。');
+    await say('你在屬於自己的那片花瓣上坐下。身邊，是你所愛的人。');
+    await say('「是愛，推動了太陽和其他的星辰。」——這是《神曲》的最後一句。');
   }
 
   // ---------- 地獄 ----------
@@ -1299,7 +1297,7 @@
     sum.innerHTML = `業力 <b>${fmt(d.karma)}</b>　刑期 <b>${days}</b> 天`;
     box.appendChild(sum);
     gong();
-    await say(`判官提筆一揮：你要在地獄待上 ${days} 天，等業力回到 -50，才能離開。`);
+    await say(`判官提筆一揮：你要在地獄待上 ${days} 天，等業力回到 0，才能離開。`);
   }
 
   async function sRise(d) {
@@ -1316,15 +1314,14 @@
     show('每受一天刑，罪就輕了一點……');
     await animate(6500, t => {
       rl.textContent = `第 ${Math.max(1, Math.round(depth - (depth - 1) * t))} 層`;
-      rd.textContent = `第 ${Math.round(days * t)} 天　業力 ${fmt(Math.round(d.karma + (-50 - d.karma) * t))}`;
+      rd.textContent = `第 ${Math.round(days * t)} 天　業力 ${fmt(Math.round(d.karma * (1 - t)))}`;
       rg.setAttribute('transform', `translate(0 ${-t * 250})`);
     });
     chime();
-    await say(`第 ${days} 天，你的業力終於回到了 -50。刑期滿了。`);
+    await say(`第 ${days} 天，你的業力終於回到了 0。刑期滿了。`);
   }
 
   async function sJizo() {
-    const days = purgDays(-50);
     let rays = '';
     for (let i = 0; i < 14; i++) {
       const a = i / 14 * Math.PI * 2, b = a + 0.14;
@@ -1358,7 +1355,7 @@
     await say('一位手持錫杖的僧人緩緩走來——是地藏王菩薩。');
     await say('祂曾經發下大願：「地獄不空，誓不成佛。」為了救度受苦的眾生，祂一直留在這裡。');
     await say('「知錯能改，就還有希望。」祂牽起你的手，帶你走出了地獄。');
-    await say(`之後，你又在人間與天界之間修行了 ${days} 天，一點一點洗淨了罪，終於可以升上天界。`);
+    await say('「去吧，到奈何橋喝碗孟婆湯，重新做人。這一次，要好好過。」');
   }
 
   // ---------- 奈何橋：選擇要不要轉世 ----------
@@ -1386,8 +1383,7 @@
         ${ghost(330, 330, .8)}
         <rect x="0" y="500" width="800" height="20" fill="#06101a"/>
       </svg>`);
-    await say('……很久很久以後。');
-    await say('有一天，你來到了奈何橋。橋下是流著遺忘之水的忘川河，橋頭站著一位老婆婆——孟婆。');
+    await say('你順著黃泉路走到了奈何橋。橋下是流著遺忘之水的忘川河，橋頭站著一位老婆婆——孟婆。');
     await say('她舀起一碗熱湯：「喝下它，你就會忘記這一生，重新投胎做人。」');
     const pick = await ask('你要喝下孟婆湯嗎？', ['🍵 喝下孟婆湯，轉世投胎', '不喝，我想記得這一生']);
     if (pick === 0) {
@@ -1400,8 +1396,8 @@
       await say('你聽見了嬰兒的哭聲。那是你自己的聲音。新的人生，開始了。');
       return 'reincarnate';
     }
-    await say('孟婆嘆了口氣，收回了碗：「也好。等你準備好了，再來吧。」');
-    await say('你轉身走回雲端。在那裡，你所愛的人都還在等你。');
+    await say('孟婆嘆了口氣：「不肯喝湯的人，就得跳進忘川河，受上一千年的苦，才能帶著記憶去投胎。」');
+    await say('你點點頭，縱身跳進了冰冷的河水。你寧願等一千年，也不想忘記這一生。');
     return 'stay';
   }
 
@@ -1416,23 +1412,19 @@
     root.classList.add('on');
     if (!raf) raf = requestAnimationFrame(frame);
 
-    const result = { choice: 'skip', hellDays: 0, purgDays: 0, depth: 0 };
+    // 天堂是永遠的安息；地獄刑滿後要走奈何橋，選擇喝不喝孟婆湯
+    const result = { choice: 'stay', hellDays: 0, depth: 0 };
     if (d.realm === 'HELL') {
       result.depth = hellDepth(d.karma);
       result.hellDays = hellDays(d.karma);
-      result.purgDays = purgDays(-50);
-    } else if (d.realm === 'PURGATORY') {
-      result.purgDays = purgDays(d.karma);
     }
 
     const scenes = [sDeath, sWuchang, sGate, sRoad, sHome, sMirror, sJudge];
-    if (d.realm === 'HEAVEN') scenes.push(sNanTian, sReunion, sPeach, sApsara, sStars, sParadise);
-    else if (d.realm === 'PURGATORY') scenes.push(sPurgatory, sEden, sNanTian, sReunion, sParadise);
-    else scenes.push(sHell, sMap, sTour, sLedger, sRise, sJizo, sNanTian, sReunion, sParadise);
-    scenes.push(sBridge);
+    if (d.realm === 'HEAVEN') scenes.push(sGates, sReunion, sCity, sChoir, sStars, sRose);
+    else scenes.push(sHell, sMap, sTour, sLedger, sRise, sJizo, sBridge);
     // 每次都一樣的場景可以跳過；會因玩家選擇而不同的場景一定會播
-    const FIXED = new Set([sDeath, sWuchang, sGate, sRoad, sNanTian, sReunion, sPeach, sApsara, sParadise, sJizo, sEden]);
-    const run = s => s === sEden ? sEden(result.purgDays) : s(d);
+    const FIXED = new Set([sDeath, sWuchang, sGate, sRoad, sGates, sReunion, sCity, sChoir, sRose, sJizo]);
+    const run = s => s(d);
 
     try {
       for (let i = 0; i < scenes.length; i++) {
@@ -1465,20 +1457,20 @@
   window.Journey = {
     /**
      * ending: { soul:{name, age, karma, realm}, verdict, history:[{stage, choice, karma}] }
-     * 回傳 { choice: 'reincarnate' | 'stay' | 'skip', hellDays, purgDays, depth }
+     * 回傳 { choice: 'reincarnate' | 'stay', hellDays, depth }（choice 只有下地獄的人才會選）
      */
     play: ending => play({
       name: ending.soul.name, age: ending.soul.age, karma: ending.soul.karma,
       realm: ending.soul.realm, verdict: ending.verdict, history: ending.history
     }),
     sinLevel,
-    /** 開發用：直接預覽某一層地獄或某個天界場景，例如 Journey.preview(9) 或 Journey.preview('sPeach') */
+    /** 開發用：直接預覽某一層地獄或某個天界場景，例如 Journey.preview(9) 或 Journey.preview('sCity') */
     preview(what, d = { name: '測試者', age: 80, karma: 100, realm: 'HEAVEN', verdict: '', history: [{ stage: '童年', choice: '當志工', karma: 10 }, { stage: '少年', choice: '讓座', karma: 5 }, { stage: '中年', choice: '捐一筆錢', karma: 12 }] }) {
       if (!root) build();
       resize();
       root.classList.add('on');
       if (!raf) raf = requestAnimationFrame(frame);
-      const fns = { sNanTian, sReunion, sPeach, sApsara, sStars, sParadise, sMap, sLedger };
+      const fns = { sMirror, sGates, sReunion, sCity, sChoir, sStars, sRose, sMap, sLedger, sJizo, sBridge };
       if (typeof what === 'number') hellScene(what);
       else fns[what](d).catch(() => {});
     }

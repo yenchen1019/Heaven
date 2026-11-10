@@ -64,7 +64,6 @@ public class Afterlife {
             s.passDay();
             switch (s.realm()) {
                 case HELL -> tickHell(s, log);
-                case PURGATORY -> tickPurgatory(s, log);
                 case HEAVEN -> tickHeaven(s, log);
                 case WAITING -> { }
             }
@@ -87,36 +86,20 @@ public class Afterlife {
             String[] punish = {"上刀山", "下油鍋", "被拔舌", "在寒冰地獄發抖"};
             log.add("🔥 " + s.name() + " 正在" + punish[rng.nextInt(punish.length)]);
         }
+        // 刑期滿了，走過奈何橋、喝下孟婆湯，轉世投胎
         if (Judge.decide(s.karma()) != Realm.HELL) {
-            s.moveTo(Realm.PURGATORY);
-            log.add("⬆ " + s.name() + " 刑期已滿，從地獄升到煉獄");
-        }
-    }
-
-    private void tickPurgatory(Soul s, List<String> log) {
-        // 多數時候在修行，偶爾心生惡念
-        if (rng.nextInt(10) < 7) {
-            s.changeKarma(2 + rng.nextInt(5));
-        } else {
-            s.changeKarma(-(1 + rng.nextInt(6)));
-        }
-        Realm r = Judge.decide(s.karma());
-        if (r == Realm.HEAVEN) {
-            s.moveTo(Realm.HEAVEN);
-            log.add("✨ " + s.name() + " 修行圓滿，升上天堂！");
-        } else if (r == Realm.HELL) {
-            s.moveTo(Realm.HELL);
-            log.add("⬇ " + s.name() + " 在煉獄墮落，被打入地獄");
+            s.reincarnate(18 + rng.nextInt(80));
+            giveRandomLife(s);
+            reincarnations++;
+            log.add("♻ " + s.name() + " 刑期已滿，喝下孟婆湯轉世投胎，過完第 " + s.lifeCount() + " 世後再次回來等待審判");
         }
     }
 
     private void tickHeaven(Soul s, List<String> log) {
-        // 在天堂住滿 30 天後，每天有機會選擇轉世
-        if (s.daysInRealm() >= 30 && rng.nextInt(20) == 0) {
-            s.reincarnate(18 + rng.nextInt(80));
-            giveRandomLife(s);
-            reincarnations++;
-            log.add("♻ " + s.name() + " 選擇轉世投胎，過完第 " + s.lifeCount() + " 世後再次回來等待審判");
+        // 天堂是永遠的安息，偶爾記一筆天上的日常
+        if (rng.nextInt(15) == 0) {
+            String[] joys = {"在天使詩班裡唱歌", "在生命樹下乘涼", "沿著黃金街散步", "在彩虹橋邊和老狗重逢"};
+            log.add("✨ " + s.name() + " 正" + joys[rng.nextInt(joys.length)]);
         }
     }
 

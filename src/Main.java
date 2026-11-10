@@ -85,10 +85,9 @@ public class Main {
         for (int i = 0; i < n; i++) {
             List<String> log = world.advanceDay();
             world.judgeAll(); // 快轉時自動審判新來的靈魂
-            // 只印重要事件（升降、轉世），避免洗版
+            // 只印重要事件（轉世），避免洗版
             log.stream()
-                    .filter(l -> l.startsWith("=") || l.startsWith("✨") || l.startsWith("⬆")
-                            || l.startsWith("⬇") || l.startsWith("♻"))
+                    .filter(l -> l.startsWith("=") || l.startsWith("♻"))
                     .forEach(System.out::println);
         }
         showStats();

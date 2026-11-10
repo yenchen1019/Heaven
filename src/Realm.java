@@ -2,7 +2,6 @@
 public enum Realm {
     WAITING("等待審判"),
     HEAVEN("天堂"),
-    PURGATORY("煉獄"),
     HELL("地獄");
 
     private final String displayName;
