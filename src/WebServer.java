@@ -39,6 +39,11 @@ public class WebServer {
     private static void serveIndex(HttpExchange ex) throws IOException {
         String p = ex.getRequestURI().getPath();
         if (p.equals("/")) p = "/index.html";
+        // 網頁版直接讀題庫檔（game.js 會抓 scenarios.txt）
+        if (p.equals("/scenarios.txt")) {
+            send(ex, 200, "text/plain", Files.readString(Path.of("data", "scenarios.txt"), StandardCharsets.UTF_8));
+            return;
+        }
         Path base = Path.of("web").toAbsolutePath().normalize();
         Path file = base.resolve(p.substring(1)).normalize();
         if (!file.startsWith(base) || !Files.isRegularFile(file)) {

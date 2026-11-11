@@ -15,7 +15,8 @@ public record Scenario(String stage, String situation, List<Choice> choices) {
     public record Choice(String text, int karma, String outcome) { }
 
     public static final List<String> STAGES = List.of("童年", "少年", "青年", "中年", "老年");
-    public static final int PER_STAGE = 2;
+    /** 每個階段抽幾題（順序對應 STAGES），一共 7 題 */
+    public static final List<Integer> PER_STAGE = List.of(1, 1, 2, 2, 1);
     private static final Path FILE = Path.of("data", "scenarios.txt");
 
     private static List<Scenario> all;
@@ -26,13 +27,14 @@ public record Scenario(String stage, String situation, List<Choice> choices) {
         return all;
     }
 
-    /** 每個人生階段各抽 PER_STAGE 題，選項順序也打亂 */
+    /** 每個人生階段依 PER_STAGE 抽題，選項順序也打亂 */
     public static List<Scenario> randomLife(Random rng) {
         List<Scenario> life = new ArrayList<>();
-        for (String stage : STAGES) {
+        for (int k = 0; k < STAGES.size(); k++) {
+            String stage = STAGES.get(k);
             List<Scenario> pool = new ArrayList<>(all().stream().filter(s -> s.stage().equals(stage)).toList());
             Collections.shuffle(pool, rng);
-            for (Scenario s : pool.subList(0, Math.min(PER_STAGE, pool.size()))) {
+            for (Scenario s : pool.subList(0, Math.min(PER_STAGE.get(k), pool.size()))) {
                 List<Choice> shuffled = new ArrayList<>(s.choices());
                 Collections.shuffle(shuffled, rng);
                 life.add(new Scenario(s.stage(), s.situation(), shuffled));
@@ -92,9 +94,11 @@ public record Scenario(String stage, String situation, List<Choice> choices) {
         }
         addIfComplete(result, stage, situation, choices, lines.size());
 
-        for (String s : STAGES) {
+        for (int k = 0; k < STAGES.size(); k++) {
+            String s = STAGES.get(k);
+            int need = PER_STAGE.get(k);
             long n = result.stream().filter(sc -> sc.stage().equals(s)).count();
-            if (n < PER_STAGE) throw new IllegalStateException("題庫的「" + s + "」只有 " + n + " 題，至少要 " + PER_STAGE + " 題");
+            if (n < need) throw new IllegalStateException("題庫的「" + s + "」只有 " + n + " 題，至少要 " + need + " 題");
         }
         return List.copyOf(result);
     }

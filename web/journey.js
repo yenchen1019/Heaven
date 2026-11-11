@@ -1,6 +1,7 @@
 // 死後旅程：人生結束後播放的過場動畫
 // 地獄取材自中國民間信仰（《玉曆寶鈔》、十八層地獄、地藏王、孟婆湯）
 // 天堂取材自西方故事（《聖經》、但丁《神曲・天堂篇》、希臘神話、散文詩〈彩虹橋〉）
+// 審判後會在天堂或地獄「住下來」，一天一天過那裡的生活，每天的選擇會寫進日記（地獄還會影響刑期）
 (function () {
   const REALM_NAME = { HEAVEN: '天堂', HELL: '地獄' };
   const REALM_COLOR = { HEAVEN: '#f2c94c', HELL: '#ff4a3a' };
@@ -304,12 +305,13 @@
       case 'dust': return { k: 'dot', x: R(0, W), y: R(0, H), vx: R(-.15, .15), vy: R(-.15, .15), r: R(.6, 1.6), a: R(.2, .6), c: '220,230,255', sway: R(0, 6) };
       case 'snow': return { k: 'dot', x: R(0, W), y: init ? R(0, H) : -10, vx: R(-.3, .3), vy: R(.6, 1.6), r: R(1, 3), a: R(.5, .95), c: '235,245,255', sway: R(0, 6) };
       case 'blossom': return { k: 'petal', x: R(-50, W), y: init ? R(0, H) : -20, vx: R(-.3, .8), vy: R(.5, 1.2), r: R(4, 7), rot: R(0, 6), vr: R(-.04, .04), a: R(.6, .95), c: Math.random() < .5 ? '255,170,200' : '255,215,225', sway: R(0, 6) };
+      case 'money': return { k: 'paper', x: R(0, W), y: init ? R(0, H) : -20, vx: R(-.3, .3), vy: R(.5, 1.3), r: R(7, 12), rot: R(0, 6), vr: R(-.05, .05), a: R(.7, 1), c: '232,192,64', sway: R(0, 6) };
       case 'stars': return { k: 'star', x: R(0, W), y: R(0, H * .6), vx: 0, vy: 0, r: R(.5, 1.6), a: R(.3, 1), c: '255,255,255', sway: R(0, 6) };
     }
     return null;
   }
 
-  const MAX = { fog: 18, petals: 70, embers: 110, light: 80, feathers: 26, dust: 60, stars: 120, snow: 110, blossom: 80 };
+  const MAX = { fog: 18, petals: 70, embers: 110, light: 80, feathers: 26, dust: 60, stars: 120, snow: 110, blossom: 80, money: 60 };
 
   function setParticles(mode) {
     pmode = mode;
@@ -333,6 +335,15 @@
         gr.addColorStop(1, `rgba(${p.c},0)`);
         g2d.fillStyle = gr;
         g2d.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+      } else if (p.k === 'paper') {
+        g2d.save();
+        g2d.translate(p.x, p.y);
+        g2d.rotate(p.rot);
+        g2d.fillStyle = `rgb(${p.c})`;
+        g2d.fillRect(-p.r, -p.r * .6, p.r * 2, p.r * 1.2);
+        g2d.fillStyle = '#c82a1a';
+        g2d.fillRect(-p.r * .3, -p.r * .3, p.r * .6, p.r * .6);
+        g2d.restore();
       } else if (p.k === 'petal' || p.k === 'feather') {
         g2d.save();
         g2d.translate(p.x, p.y);
@@ -1077,7 +1088,7 @@
           <path d="M476,434 q12,-10 8,-20" stroke="rgba(255,236,210,.9)" stroke-width="4" fill="none"/>
         </g></g>
       </svg>`);
-    await say('門後是一片看不到盡頭的草原，空氣裡有你最喜歡的味道。');
+    await say('你沿著小路走，來到一片看不到盡頭的草原，空氣裡有你最喜歡的味道。');
     await say('遠遠地，有人在向你揮手。是那些比你先離開的人，他們看起來年輕又健康，好像從來沒有老過。');
     await say('草原的另一頭架著一道彩虹。西方有一首散文詩說：寵物離開人世以後，會在彩虹橋邊的草原上奔跑，等主人來。');
     await say('小時候養的那隻狗認出了你，搖著尾巴朝你飛奔過來。');
@@ -1108,7 +1119,7 @@
         ${ghost(300, 500, .8)}
       </svg>`);
     chime();
-    await say('穿過草原，一座發光的城出現在眼前——新耶路撒冷。');
+    await say('天使帶你走進天堂的中心——一座發光的城，新耶路撒冷。');
     await say('《啟示錄》這樣描寫它：城牆是碧玉造的，城是純金的，好像明淨的玻璃；連街道都是用精金鋪成的。');
     await say('城裡不需要太陽，也不需要月亮，因為神的榮光照亮了一切。');
     await say('一條明亮如水晶的生命河從城中流出。河的兩岸長著生命樹，一年結十二次果子，每個月都有新的果實。');
@@ -1161,7 +1172,7 @@
         ${angel(150, 490, .6, 0)}${ghost(230, 495, .6)}
       </svg>`);
     const cs = layer.querySelectorAll('.cs'), cl = layer.querySelectorAll('.cl');
-    await say('夜晚，你的守護天使帶你飛到了星空裡。');
+    await say('有一天，你的守護天使帶你飛到了天堂的最外圍，那裡是一整片星空。');
     await say('「你看，」天使說，「你在人間做過的每一件好事，都變成了天上的一顆星。」');
     for (let i = 0; i < n; i++) {
       cs[i].style.opacity = 1;
@@ -1255,25 +1266,6 @@
     await say(`你這一生犯下的罪，牽連到其中 ${levels.size} 層。每一層，你都得親自走一遭。`);
   }
 
-  /** 依照你的每一件壞事，走過對應的地獄 */
-  async function sTour(d) {
-    const groups = new Map();
-    for (const h of badDeeds(d)) {
-      const lv = sinLevel(h);
-      if (!groups.has(lv)) groups.set(lv, []);
-      groups.get(lv).push(h);
-    }
-    const order = [...groups.keys()].sort((a, b) => a - b);
-    for (const lv of order) {
-      hellScene(lv);
-      if (lv === 6 || lv === 16 || lv === 9) tone(90, 1.2, { type: 'sawtooth', gain: 0.03, slide: .7 });
-      const deeds = groups.get(lv).map(h => `「${h.choice}」`).join('、');
-      await say(`第 ${lv} 層，${HELL_LEVELS[lv - 1]}。因為你生前${deeds}——`);
-      await say(HELL_DESC[lv - 1]);
-    }
-    await say('牛頭和馬面拿著鋼叉，一層一層押著你走。很痛，但是不會死——因為你早就已經死了。');
-  }
-
   async function sLedger(d) {
     const days = hellDays(d.karma);
     const layer = scene('判官的帳簿', '民間信仰・判官與生死簿', 'radial-gradient(circle at 50% 40%, #2a1410, #080303 70%)', 'dust',
@@ -1297,11 +1289,14 @@
     sum.innerHTML = `業力 <b>${fmt(d.karma)}</b>　刑期 <b>${days}</b> 天`;
     box.appendChild(sum);
     gong();
+    hell.total = days;
     await say(`判官提筆一揮：你要在地獄待上 ${days} 天，等業力回到 0，才能離開。`);
+    await say('「不過，」判官抬起頭，「你在地府怎麼過日子，也會記進這本帳裡。」');
   }
 
   async function sRise(d) {
-    const depth = hellDepth(d.karma), days = hellDays(d.karma);
+    const depth = hellDepth(d.karma), { total, lived } = hell;
+    if (total <= lived) return;
     const layer = scene('贖罪', '民間信仰・十八層地獄', 'radial-gradient(ellipse at 50% 92%, #7a1808, #220404 50%, #050101)', 'embers',
       `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
         ${funnelRings()}
@@ -1310,15 +1305,16 @@
         <g class="rg">${ghost(400, 440, .9)}</g>
       </svg>`);
     const rl = layer.querySelector('.rl'), rd = layer.querySelector('.rd'), rg = layer.querySelector('.rg');
-    await say('一天又一天，你在刑罰中慢慢明白了自己犯下的錯。');
+    const k0 = Math.round(d.karma * (1 - lived / total));
+    await say(`剩下的 ${total - lived} 天，日子就這樣重複著：點卯、受刑、勞役、睡覺。`);
     show('每受一天刑，罪就輕了一點……');
-    await animate(6500, t => {
+    await animate(Math.min(6500, 2500 + (total - lived) * 200), t => {
       rl.textContent = `第 ${Math.max(1, Math.round(depth - (depth - 1) * t))} 層`;
-      rd.textContent = `第 ${Math.round(days * t)} 天　業力 ${fmt(Math.round(d.karma * (1 - t)))}`;
+      rd.textContent = `第 ${Math.round(lived + (total - lived) * t)} 天　業力 ${fmt(Math.round(k0 * (1 - t)))}`;
       rg.setAttribute('transform', `translate(0 ${-t * 250})`);
     });
     chime();
-    await say(`第 ${days} 天，你的業力終於回到了 0。刑期滿了。`);
+    await say(`第 ${total} 天，你的業力終於回到了 0。刑期滿了。`);
   }
 
   async function sJizo() {
@@ -1356,6 +1352,647 @@
     await say('祂曾經發下大願：「地獄不空，誓不成佛。」為了救度受苦的眾生，祂一直留在這裡。');
     await say('「知錯能改，就還有希望。」祂牽起你的手，帶你走出了地獄。');
     await say('「去吧，到奈何橋喝碗孟婆湯，重新做人。這一次，要好好過。」');
+  }
+
+  // ================= 死後的生活 =================
+  let diary = [];                       // 死後生活的日記，結局畫面會列出來
+  const hell = { total: 0, lived: 0 };  // 地獄刑期：總天數、已經過了幾天
+  const HELL_LIVE_DAYS = 3;             // 地獄裡詳細演出的天數（剩下的快轉）
+  const HEAVEN_DAYS = 4;                // 天堂裡可以自己安排的天數
+
+  const shuffle = arr => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  };
+
+  /** 大大的「第 N 天」字卡 */
+  function dayCard(big, small, bg, color, mode) {
+    return scene('', '', bg, mode, `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
+      <text x="400" y="220" font-size="68" fill="${color}" text-anchor="middle" dominant-baseline="middle" font-weight="900" letter-spacing="14" filter="url(#jglow)">${esc(big)}</text>
+      <text x="400" y="296" font-size="20" fill="${color}" opacity=".8" text-anchor="middle" dominant-baseline="middle" letter-spacing="4">${esc(small)}</text></svg>`);
+  }
+
+  // ---------- 天堂的圖畫零件 ----------
+  function lion(x, y, s = 1) {
+    return `<g transform="translate(${x} ${y}) scale(${s})">
+      <ellipse cx="0" cy="0" rx="70" ry="26" fill="#e0a848"/>
+      <path d="M64,-4 Q100,-10 104,-34" stroke="#e0a848" stroke-width="6" fill="none"/><circle cx="104" cy="-36" r="7" fill="#a8641c"/>
+      <rect x="-60" y="14" width="40" height="12" rx="6" fill="#e0a848"/><rect x="20" y="14" width="44" height="12" rx="6" fill="#e0a848"/>
+      <circle cx="-70" cy="-22" r="38" fill="#a8641c"/>
+      <circle cx="-74" cy="-20" r="25" fill="#ecb858"/>
+      <path d="M-86,-24 q5,4 10,0 M-70,-24 q5,4 10,0" stroke="#5a3a1a" stroke-width="2.5" fill="none"/>
+      <ellipse cx="-74" cy="-12" rx="6" ry="4" fill="#6a3a1a"/>
+      <path d="M-80,-4 q6,5 12,0" stroke="#6a3a1a" stroke-width="2" fill="none"/></g>`;
+  }
+
+  function lamb(x, y, s = 1) {
+    let wool = '';
+    for (let i = 0; i < 7; i++) wool += `<circle cx="${-26 + i * 9}" cy="${-8 + (i % 2) * 8}" r="13" fill="#fffdf6" stroke="#e8e0d0"/>`;
+    return `<g transform="translate(${x} ${y}) scale(${s})">${wool}
+      <ellipse cx="38" cy="-10" rx="11" ry="9" fill="#3a3030"/><ellipse cx="30" cy="-16" rx="6" ry="3" fill="#3a3030" transform="rotate(-30 30 -16)"/>
+      <path d="M33,-11 q3,2 6,0" stroke="#fff" stroke-width="1.5" fill="none"/></g>`;
+  }
+
+  /** 天堂的家：每一件好事是一個亮著燈的房間 */
+  function mansion(n) {
+    const rooms = Math.max(1, n), cols = Math.min(4, rooms), rows = Math.ceil(rooms / 4);
+    const w = 150 + cols * 74, h = 110 + rows * 74, x0 = 400 - w / 2, base = 440, top = base - h;
+    let win = '';
+    for (let i = 0; i < rooms; i++) {
+      const c = i % cols, r = Math.floor(i / cols);
+      const rowCount = r === rows - 1 ? rooms - r * cols : cols;
+      const wx = 400 - (rowCount * 74) / 2 + c * 74 + 17;
+      win += `<rect class="mw" x="${wx}" y="${top + 26 + r * 74}" width="40" height="52" rx="20" fill="#9a8a6a" stroke="#e8c060" stroke-width="2" style="transition:fill .8s"/>`;
+    }
+    let cols2 = '';
+    for (let i = 0; i <= cols + 1; i++) cols2 += `<rect x="${x0 + 8 + i * (w - 28) / (cols + 1)}" y="${top}" width="12" height="${h}" fill="#fff8e0" stroke="#e8d0a0"/>`;
+    return `<rect x="${x0}" y="${top}" width="${w}" height="${h}" fill="#fff4d8" stroke="#e8c060" stroke-width="3"/>
+      ${cols2}
+      <path d="M${x0 - 20},${top} L400,${top - 70 - cols * 6} L${x0 + w + 20},${top}Z" fill="#f2c94c" stroke="#d8a830" stroke-width="3"/>
+      <circle cx="400" cy="${top - 36 - cols * 3}" r="14" fill="#fffbe8" filter="url(#jglow)"/>
+      ${win}
+      <path d="M375,${base} L375,${base - 46} A25,25 0 0,1 425,${base - 46} L425,${base}Z" fill="url(#jpearl)" stroke="#e8c060" stroke-width="3"/>
+      <rect x="${x0 - 30}" y="${base}" width="${w + 60}" height="10" fill="#e8c060"/>`;
+  }
+
+  // ---------- 天堂：你的家 ----------
+  async function sMansion(d) {
+    const good = goodDeeds(d);
+    let flowers = '';
+    for (let i = 0; i < 40; i++) flowers += `<circle cx="${(i * 89) % 800}" cy="${462 + (i * 31) % 50}" r="${3 + i % 3}" fill="${['#ff9ab0', '#ffd36a', '#fff', '#c9a6ff'][i % 4]}"/>`;
+    const layer = scene('你在天上的家', '《聖經・約翰福音》14:2 ＋《馬太福音》6:20', 'linear-gradient(#fff8e8, #ffeccc 45%, #e8e0f8)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        ${sunRays(14, .12)}
+        <path d="M0,450 Q400,420 800,450 L800,520 L0,520Z" fill="#b8e0a0"/>
+        ${mansion(good.length)}
+        ${flowers}
+        ${angel(150, 420, .7, 0)}${ghost(230, 470, .7)}
+      </svg>`);
+    const wins = layer.querySelectorAll('.mw');
+    await say('進了天門，天使帶你走過一條開滿花的小路，停在一棟房子前。');
+    await say('耶穌說過：「在我父的家裡有許多住處。」每一個來到天堂的人，都有一個自己的家。');
+    await say('「你在人間做的每一件好事，」天使說，「都是存在天上的財寶。這個家，就是用它們蓋起來的。」');
+    if (!good.length) {
+      wins[0].style.fill = '#fff4b0';
+      await say('你這一生沒有做過什麼壞事，但也沒有特別做過什麼好事。所以，你的家只有一個房間。');
+      await say('「不過別擔心，」天使笑著說，「在天堂，房子是可以慢慢加蓋的。」');
+    } else {
+      show('窗戶一扇一扇地亮了起來……（點一下可以加快）');
+      for (let i = 0; i < good.length; i++) {
+        wins[i].style.fill = '#fff4b0';
+        wins[i].setAttribute('filter', 'url(#jglow)');
+        tone(523 + i * 66, 0.8, { gain: 0.03, type: 'triangle' });
+        show(`第 ${i + 1} 個房間：${good[i].stage}時，你「${good[i].choice}」`);
+        await wait(1700, true);
+      }
+      await say(good.length >= 4 ? `你的家大得像一座宮殿，${good.length} 個房間，每一扇窗都亮著燈。` : `你的家有 ${good.length} 個房間，每一扇窗都亮著溫暖的燈。`);
+    }
+    chime();
+    await say('你推開門。門口擺著一雙拖鞋，大小剛剛好。從今天起，這裡就是你永遠的家。');
+  }
+
+  // ---------- 天堂：可以自己安排的日子 ----------
+  async function hFeast() {
+    let seats = '';
+    for (let i = 0; i < 6; i++) {
+      const t = i / 5, y = 340 + t * 110, hw = 250 + t * 110;
+      seats += ghost(400 - hw - 10, y + 30, .45 + t * .35, '255,236,210') + ghost(400 + hw + 10, y + 30, .45 + t * .35, '255,226,200');
+      seats += `<circle cx="${400 - hw * .7}" cy="${y - 4}" r="${5 + t * 4}" fill="#8a4ab0"/><circle cx="${400 - hw * .7 + 8}" cy="${y - 2}" r="${5 + t * 4}" fill="#9a5ac0"/>
+        <path d="M${400 + hw * .6},${y} l-${6 + t * 4},-${18 + t * 10} h${12 + t * 8}Z" fill="#f0c040"/>
+        <ellipse cx="${400 + hw * .25}" cy="${y}" rx="${16 + t * 8}" ry="${7 + t * 3}" fill="#d8a060"/>`;
+    }
+    scene('羔羊的婚筵', '《聖經・啟示錄》19:9 ＋《路加福音》14、16 章', 'linear-gradient(#fff6e0, #f8e0b0 50%, #e8c890)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        ${sunRays(12, .1)}
+        ${[90, 230, 570, 710].map(x => `<rect x="${x - 16}" y="60" width="32" height="300" fill="#fff8e8" stroke="#e8d0a0"/>`).join('')}
+        <path d="M60,60 Q230,0 400,40 Q570,0 740,60" fill="none" stroke="#e8c060" stroke-width="8"/>
+        <polygon points="250,330 550,330 760,500 40,500" fill="#fffdf6" stroke="#e8c060" stroke-width="3"/>
+        ${seats}
+        ${angel(700, 300, -.7, .4)}${ghost(400, 515, 1)}
+      </svg>`);
+    chime();
+    await say('今天，天堂有一場盛大的宴席。《啟示錄》說：「凡被請赴羔羊之婚筵的，有福了。」');
+    await say('長長的餐桌一眼望不到盡頭，桌上擺滿了剛出爐的麵包、成串的葡萄，杯子裡的酒永遠倒不完。');
+    const pick = await ask('你要坐在哪裡？', ['🪑 坐在最末尾的位子', '👑 直接坐到最前面']);
+    if (pick === 0) {
+      await say('主人走過來，拍拍你的肩膀：「朋友，請上座。」');
+      await say('耶穌講過這個比喻：赴宴時要坐在末位，主人自然會請你上座。「凡自高的，必降為卑；自卑的，必升為高。」');
+    } else {
+      await say('主人溫和地說：「這個位子是留給別人的。」你紅著臉換到了後面。');
+      await say('不過沒關係。在天堂，沒有人會記仇，大家很快又笑成一團。');
+    }
+    await say('你的鄰座是一位穿著破衣服的老人，叫做拉撒路。《路加福音》說，他生前在財主門口討飯，死後被天使帶到了亞伯拉罕的懷裡。');
+    await say('他舉起杯子對你笑：「在這裡，再也不會有人餓肚子了。」');
+    return pick === 0 ? '赴天上的宴席，被主人請到了上座' : '赴天上的宴席，搶坐前排被請到了後面';
+  }
+
+  async function hGarden() {
+    let grass = '';
+    for (let i = 0; i < 50; i++) grass += `<circle cx="${(i * 71) % 800}" cy="${440 + (i * 37) % 70}" r="${3 + i % 3}" fill="${['#ff9ab0', '#fff', '#ffd36a'][i % 3]}"/>`;
+    scene('伊甸園', '《聖經・創世記》第 2 章 ＋《以賽亞書》11:6', 'linear-gradient(#e8f8ff, #d0f0d0 50%, #90c878)', 'blossom',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <path d="M0,300 Q200,250 400,290 T800,280 L800,520 L0,520Z" fill="#9ad080"/>
+        <path d="M380,290 Q340,380 200,520 L320,520 Q400,400 420,290Z" fill="#a8e0ff" stroke="#e8f8ff" stroke-width="2"/>
+        <path class="jwave" d="M400,295 Q360,400 260,520" stroke="#fff" stroke-width="2" fill="none"/>
+        <rect x="610" y="180" width="26" height="150" fill="#8a6a4a"/>
+        <circle cx="623" cy="160" r="80" fill="#6ab860"/><circle cx="570" cy="200" r="50" fill="#5aa850"/><circle cx="680" cy="196" r="55" fill="#78c468"/>
+        ${[0, 1, 2, 3, 4, 5, 6].map(i => `<circle cx="${580 + (i * 23) % 90}" cy="${140 + (i * 31) % 90}" r="8" fill="#ff6a5a"/>`).join('')}
+        ${grass}
+        ${lion(560, 420, 1)}${lamb(600, 404, .8)}
+        ${lamb(170, 440, .7)}${ghost(300, 480, .9)}
+      </svg>`);
+    await say('天使帶你來到一座開滿花的園子。一條河從園中流出，分成四道——就像《創世記》裡的伊甸園。');
+    await say('以賽亞先知描寫過這樣的地方：「豺狼必與綿羊羔同居，豹子與山羊羔同臥……少壯獅子與牛犢同群，小孩子要牽引牠們。」');
+    await say('一頭獅子正躺在樹下曬太陽，一隻小羊靠在牠身上，睡得正香。');
+    const pick = await ask('你要做什麼？', ['🦁 摸摸獅子的鬃毛', '🐑 抱起小羊']);
+    if (pick === 0) await say('獅子瞇起眼睛，喉嚨發出呼嚕呼嚕的聲音，像一隻超大的貓。');
+    else await say('小羊軟綿綿的，身上有陽光的味道。牠在你懷裡打了個呵欠，又睡著了。');
+    await say('一隻從來沒見過的鳥飛到你的肩膀上。天使說：「當年，亞當替每一種動物取了名字。這一隻剛剛誕生，還沒有名字，你來取吧。」');
+    await say('你想了想，用一個你很想念的人的名字叫牠。');
+    await say('那天下午，你靠著獅子睡了一個這輩子最安穩的午覺。');
+    return pick === 0 ? '在伊甸園摸了獅子，替一隻新的鳥取了名字' : '在伊甸園抱著小羊午睡，替一隻新的鳥取了名字';
+  }
+
+  async function hFly() {
+    const layer = scene('學飛', '《聖經・以賽亞書》40:31', 'linear-gradient(#6aa8f0, #a8d0ff 50%, #e8f4ff)', 'feathers',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        ${cloudBank(120, '#fff')}${cloudBank(470, '#fff')}
+        <g class="fg" transform="translate(0 0)">
+          <path d="M386,402 Q340,360 320,400 Q344,396 356,416Z M414,402 Q460,360 480,400 Q456,396 444,416Z" fill="#fff" stroke="#e8dcc0" stroke-width="1.5"/>
+          ${ghost(400, 470, .9)}</g>
+        ${angel(220, 360, .9, 0)}${angel(620, 300, -.8, .8)}
+      </svg>`);
+    const fg = layer.querySelector('.fg');
+    await say('早上醒來，你發現背上長出了一對小小的翅膀。');
+    await say('一位天使來教你飛。《以賽亞書》說：「他們必如鷹展翅上騰；他們奔跑卻不困倦，行走卻不疲乏。」');
+    await animate(900, t => fg.setAttribute('transform', `translate(0 ${-Math.sin(t * Math.PI) * 60})`));
+    await say('第一次，你撲了兩下翅膀，就一頭栽進雲裡。雲軟軟的，一點都不痛。');
+    await animate(3000, t => fg.setAttribute('transform', `translate(${Math.sin(t * 6) * 40} ${-t * 300})`));
+    await say('第二次，你飛起來了！穿過一層又一層的雲，風從耳邊呼呼吹過。');
+    await say('你飛得比任何飛機都還要高。小時候夢見過的事，原來在這裡實現了。');
+    return '學會了用翅膀飛';
+  }
+
+  async function hEarth(d) {
+    const best = [...goodDeeds(d)].sort((a, b) => b.karma - a.karma)[0];
+    let town = '';
+    for (let i = 0; i < 11; i++) {
+      const x = 180 + i * 42, h = 30 + (i * 29 % 50);
+      town += `<rect x="${x}" y="${400 - h}" width="34" height="${h}" fill="#2a3048"/>`;
+      if (i % 2) town += `<rect x="${x + 12}" y="${410 - h}" width="10" height="10" fill="#ffd27a"/>`;
+    }
+    const layer = scene('從雲縫看人間', '《聖經・馬太福音》18:10', 'linear-gradient(#fff8e8, #ffeccc)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <ellipse cx="400" cy="330" rx="270" ry="130" fill="#141a30"/>
+        <circle cx="560" cy="250" r="16" fill="#f2ecd0"/>
+        ${town}
+        <rect class="jwindow" x="380" y="348" width="16" height="14" fill="#ffd27a" filter="url(#jglow)"/>
+        <g class="rb" style="opacity:0;transition:opacity 2s">${['#ff8a8a', '#ffc070', '#fff07a', '#8ae08a', '#7ac0ff'].map((c, i) =>
+          `<path d="M${230 + i * 7},400 A${170 - i * 7},${130 - i * 7} 0 0,1 ${570 - i * 7},400" fill="none" stroke="${c}" stroke-width="6" opacity=".8"/>`).join('')}</g>
+        <path d="M0,0 H800 V520 H0Z M130,330 A270,130 0 1,0 670,330 A270,130 0 1,0 130,330Z" fill="#fffaf0" fill-rule="evenodd"/>
+        ${Array.from({ length: 28 }, (_, i) => { const a = i / 28 * Math.PI * 2; return `<circle cx="${(400 + Math.cos(a) * 275).toFixed(0)}" cy="${(330 + Math.sin(a) * 135).toFixed(0)}" r="${26 + (i * 7) % 18}" fill="#fffaf0"/>`; }).join('')}
+        ${cloudBank(440, '#fffaf0')}
+        ${ghost(160, 480, .8)}${angel(640, 470, -.6, .3)}
+      </svg>`);
+    await say('你趴在一朵雲的邊上，輕輕撥開雲層——下面就是人間。');
+    await say('你一下就找到了你的家。家人圍坐在餐桌旁，桌上多擺了一副碗筷，是留給你的。');
+    await say('耶穌說過，每個人的天使，都常在天上看著他們。你看見一位守護天使，靜靜站在你家人的身後。');
+    const pick = await ask('你想為他們做點什麼？', ['🌈 請天使在他們窗外掛一道彩虹', '💭 送他們一個夢，告訴他們你很好']);
+    if (pick === 0) {
+      layer.querySelector('.rb').style.opacity = 1;
+      chime();
+      await say('不久，你的家人走到窗邊，指著天上的彩虹。這是你離開以後，他們第一次笑出來。');
+    } else {
+      await say('那天晚上，家人夢見了你。夢裡的你年輕又健康，笑著跟他們揮手。');
+      await say('他們醒來時枕頭是濕的，心裡卻輕鬆了好多。');
+    }
+    if (best) await say(`你還看見，${best.stage}時被你幫助過的那個人，現在正用同樣的方式幫助著別人。`);
+    return pick === 0 ? '從雲縫看見家人，請天使替他們掛了一道彩虹' : '從雲縫看見家人，送了他們一個好夢';
+  }
+
+  async function hElysium() {
+    const column = x => `<rect x="${x - 12}" y="200" width="24" height="170" fill="#fffaf0" stroke="#e0d0b0"/>
+      ${[0, 1, 2].map(k => `<line x1="${x - 6 + k * 6}" y1="204" x2="${x - 6 + k * 6}" y2="366" stroke="#e8dcc0"/>`).join('')}`;
+    const olive = (x, y) => `<rect x="${x - 6}" y="${y - 60}" width="12" height="64" fill="#7a6a5a"/>
+      <ellipse cx="${x}" cy="${y - 80}" rx="46" ry="34" fill="#8aa870"/><ellipse cx="${x - 26}" cy="${y - 64}" rx="26" ry="20" fill="#7a9860"/>`;
+    scene('至福樂土', '希臘神話・荷馬《奧德賽》＋ 維吉爾《埃涅阿斯紀》第 6 卷', 'linear-gradient(#ffe8b8, #ffd890 40%, #c8e0a0 75%, #98c070)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <circle cx="160" cy="100" r="50" fill="#fff4c0" filter="url(#jbigglow)"/>
+        <path d="M0,380 Q400,340 800,380 L800,520 L0,520Z" fill="#a8d080"/>
+        <polygon points="420,160 640,160 530,110" fill="#fffaf0" stroke="#e0d0b0" stroke-width="2"/>
+        <rect x="420" y="160" width="220" height="40" fill="#fff4e0" stroke="#e0d0b0"/>
+        ${[440, 493, 547, 600].map(column).join('')}
+        <rect x="410" y="370" width="240" height="14" fill="#f0e8d8"/>
+        ${olive(120, 420)}${olive(740, 410)}
+        ${ghost(300, 470, .9, '255,240,220')}
+        <g transform="translate(300 400)"><path d="M10,-30 Q40,-60 34,-10 L14,-6Z" fill="none" stroke="#e8b840" stroke-width="3"/>
+          ${[16, 22, 28].map(x => `<line x1="${x}" y1="-40" x2="${x - 4}" y2="-8" stroke="#fff" stroke-width="1"/>`).join('')}</g>
+        ${ghost(180, 490, .7)}${ghost(560, 460, .65, '255,230,210')}${ghost(640, 470, .65, '255,236,220')}
+      </svg>`);
+    [392, 440, 494, 523, 494, 440].forEach((f, i) => tone(f, 0.9, { gain: 0.03, type: 'triangle', delay: i * 0.35 }));
+    await say('天使說，天堂很大，連古希臘人想像的樂園也在這裡。你們穿過一片橄欖樹林，來到了「至福樂土」。');
+    await say('荷馬在《奧德賽》裡說：這裡沒有雪，沒有暴風，也從不下雨，只有從大洋吹來的、輕柔的西風。');
+    await say('維吉爾寫道：至福樂土有自己的太陽和星星。英雄們在草地上比賽摔角、賽跑，有人跳舞，有人唱歌。');
+    await say('草地中央，一位穿長袍的樂手正在彈琴。他是奧菲斯——傳說他的琴聲能讓石頭流淚，連冥王都被他打動。');
+    const pick = await ask('你要做什麼？', ['🏃 加入英雄們的賽跑', '🎶 坐下來聽奧菲斯彈琴']);
+    if (pick === 0) {
+      await say('你跑得飛快，膝蓋一點也不痛了。終點的英雄為你戴上一頂橄欖枝編成的花冠。');
+    } else {
+      await say('琴聲響起，你想起了人間所有美好的日子。你閉上眼睛，一首接著一首地聽，直到天上的星星亮起來。');
+    }
+    return pick === 0 ? '在至福樂土和古代英雄賽跑，得到一頂橄欖冠' : '在至福樂土聽奧菲斯彈了一整天的琴';
+  }
+
+  const HEAVEN_ACTS = [
+    { label: '🌈 去彩虹橋邊的草原', fn: async d => { await sReunion(d); return '在彩虹橋邊，和先走一步的親人、小時候的狗重逢'; } },
+    { label: '🏙 逛新耶路撒冷的黃金街', fn: async d => { await sCity(d); return '在黃金街散步，吃了生命樹的果子'; } },
+    { label: '🎵 加入天使詩班', fn: async d => { await sChoir(d); return '加入天使詩班，得到了白袍和光環'; } },
+    { label: '🍷 赴天上的宴席', fn: hFeast },
+    { label: '🦁 去伊甸園看動物', fn: hGarden },
+    { label: '🪽 跟天使學飛', fn: hFly },
+    { label: '☁ 從雲縫看看人間的家人', fn: hEarth },
+    { label: '🏛 拜訪希臘神話的至福樂土', fn: hElysium }
+  ];
+  const HEAVEN_MORNING = [
+    '天堂沒有黑夜。《啟示錄》說：「不再有黑夜，他們也不用燈光、日光，因為主神要光照他們。」所以你醒來，不是因為天亮了，而是因為睡飽了。',
+    '你在柔軟的床上醒來。不會腰痠，不會頭痛，連老花眼都好了。',
+    '窗外有鳥在唱歌，是你從來沒聽過的旋律。門口有天使留下的字條：「今天想做什麼都可以。」',
+    '在天堂住久了，你發現這裡沒有時鐘，也沒有人在趕時間。'
+  ];
+
+  async function sHeavenLife(d) {
+    let pool = HEAVEN_ACTS.slice();
+    for (let day = 1; day <= HEAVEN_DAYS; day++) {
+      dayCard(`第 ${day} 天`, '天堂的日子', 'linear-gradient(#fffaf0, #ffeccc 55%, #e8e0f8)', '#b8862a', 'light');
+      tone(784, 1.2, { gain: 0.03, type: 'triangle' });
+      await wait(1500, true);
+      await say(HEAVEN_MORNING[day - 1]);
+      const opts = shuffle(pool).slice(0, 3);
+      const act = opts[await ask('今天想去哪裡？', opts.map(a => a.label))];
+      pool = pool.filter(a => a !== act);
+      diary.push(`第 ${day} 天：${await act.fn(d)}`);
+    }
+  }
+
+  /** 千年如一日：快轉 */
+  async function sThousand() {
+    const layer = scene('永遠', '《聖經・彼得後書》3:8', 'linear-gradient(#fff6e0, #f0e0f8 60%, #c8d8f8)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
+        ${sunRays(16, .1)}
+        <text class="tc" x="400" y="240" font-size="60" fill="#b8862a" text-anchor="middle" dominant-baseline="middle" font-weight="900" letter-spacing="6" filter="url(#jglow)"></text>
+      </svg>`);
+    const tc = layer.querySelector('.tc');
+    await say('日子就這樣一天一天過去。宴席、花園、詩班、星空……每一天都不一樣，每一天都很好。');
+    show('《彼得後書》說：「主看一日如千年，千年如一日。」');
+    await animate(5000, t => {
+      const days = Math.round(5 + Math.pow(t, 3) * 365000);
+      tc.textContent = days < 365 ? `第 ${days} 天` : `第 ${Math.floor(days / 365)} 年`;
+    });
+    await say('不知道從哪一天開始，你不再數日子了。在天堂，時間不是拿來倒數的。');
+  }
+
+  // ---------- 地獄的圖畫零件 ----------
+  function hungryGhost(x, y, s = 1) {
+    const c = 'rgba(190,215,180,.75)';
+    return `<g transform="translate(${x} ${y}) scale(${s})"><g class="jbob" style="animation-delay:${(x % 7) / 4}s">
+      <path d="M-22,-24 L-34,4 M22,-24 L34,4 M-8,0 L-10,26 M8,0 L10,26" stroke="${c}" stroke-width="3"/>
+      <ellipse cx="0" cy="-22" rx="26" ry="24" fill="${c}"/>
+      <rect x="-3" y="-72" width="6" height="30" fill="${c}"/>
+      <circle cx="0" cy="-80" r="12" fill="${c}"/>
+      <circle cx="-4" cy="-82" r="2.5" fill="#111"/><circle cx="4" cy="-82" r="2.5" fill="#111"/>
+      <ellipse cx="0" cy="-74" rx="2" ry="3" fill="#111"/></g></g>`;
+  }
+
+  /** 牢房：石牆、鐵欄杆、稻草 */
+  function cellArt(extra = '') {
+    let bricks = '';
+    for (let r = 0; r < 12; r++) for (let c = 0; c < 9; c++)
+      bricks += `<rect x="${c * 92 - (r % 2) * 46}" y="${r * 40}" width="90" height="38" fill="#1c1a1e" stroke="#2a2730"/>`;
+    let bars = '';
+    for (let i = 0; i < 9; i++) bars += `<rect x="${120 + i * 70}" y="40" width="9" height="420" fill="#3a3640" stroke="#55505e"/>`;
+    return `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">${bricks}
+      <rect x="560" y="70" width="90" height="70" fill="#06080a" stroke="#3a3640" stroke-width="4"/>
+      <circle cx="605" cy="105" r="20" fill="#bfe8c8" opacity=".75" filter="url(#jglow)"/>
+      <line x1="590" y1="70" x2="590" y2="140" stroke="#3a3640" stroke-width="4"/><line x1="620" y1="70" x2="620" y2="140" stroke="#3a3640" stroke-width="4"/>
+      <ellipse cx="400" cy="470" rx="230" ry="26" fill="#6a5a30"/>
+      ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<line x1="${200 + i * 50}" y1="${462 + i % 3 * 6}" x2="${240 + i * 50}" y2="${470 - i % 2 * 6}" stroke="#9a8a50" stroke-width="2"/>`).join('')}
+      ${extra}
+      <rect x="110" y="30" width="600" height="14" fill="#3a3640"/><rect x="110" y="456" width="600" height="10" fill="#3a3640"/>
+      ${bars}</svg>`;
+  }
+
+  // ---------- 地獄：酆都城 ----------
+  async function sFengdu(d) {
+    let roofs = '';
+    for (let i = 0; i < 7; i++) {
+      const x = 60 + i * 110, y = 150 + (i % 3) * 18;
+      roofs += `<rect x="${x}" y="${y}" width="80" height="${240 - y}" fill="#140c10"/>
+        <path d="M${x - 16},${y} Q${x + 40},${y - 26} ${x + 96},${y} Z" fill="#1e1218" stroke="#3a2028"/>
+        <rect x="${x + 30}" y="${y + 20}" width="18" height="16" fill="#5aff9a" opacity=".35"/>`;
+    }
+    scene('酆都城', '民間傳說・鬼城酆都', 'linear-gradient(#050a08, #0c1612 55%, #050605)', 'fog',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <circle cx="660" cy="70" r="30" fill="#bfe8c8" opacity=".6" filter="url(#jglow)"/>
+        ${roofs}
+        <rect x="0" y="240" width="800" height="230" fill="#1a1416" stroke="#3a2a2a"/>
+        ${Array.from({ length: 21 }, (_, i) => `<rect x="${i * 40}" y="222" width="26" height="20" fill="#1a1416" stroke="#3a2a2a"/>`).join('')}
+        <path d="M320,470 L320,340 A80,80 0 0,1 480,340 L480,470Z" fill="#050303"/>
+        <rect x="330" y="252" width="140" height="44" fill="#0c1410" stroke="#7a9a8a" stroke-width="2"/>
+        <text x="400" y="275" font-size="26" fill="#a8d8c0" text-anchor="middle" dominant-baseline="middle" font-weight="bold" letter-spacing="6">酆都城</text>
+        ${lantern(150, 300, '#5aff9a', '冥')}${lantern(250, 300, '#5aff9a', '紙')}${lantern(550, 300, '#5aff9a', '茶')}${lantern(650, 300, '#5aff9a', '冥')}
+        <rect x="0" y="470" width="800" height="50" fill="#0a0808"/>
+        ${sinners([[360, 500, .55], [420, 505, .5], [470, 500, .55], [140, 505, .5]], '170,230,200')}
+        ${ghost(250, 505, .75)}
+        ${guards()}
+      </svg>`);
+    await say('牛頭和馬面押著你，來到地府的都城——酆都城。');
+    await say('民間傳說，人死了都要到酆都報到。這裡跟人間的城市很像：有街道、有店鋪、有衙門。只是燈籠都是綠色的，路上走的全是鬼。');
+    await say('街邊的紙紮鋪裡，擺著陽間燒下來的紙房子、紙汽車，甚至還有紙做的手機。');
+    await say(`你被關進一間陰暗的牢房。門口掛著一塊木牌：「${d.name}，刑期 ${hell.total} 天」。`);
+    await say('從明天開始，你就要在這裡過日子了。');
+  }
+
+  // ---------- 地獄：每一天 ----------
+  const ROLLCALL = [
+    ['地府沒有日出，也沒有雞啼。叫醒你的，是鬼差「噹——」的一聲銅鑼。', '所有罪魂排成一列，鬼差拿著名冊一個一個點名，這叫做「點卯」。'],
+    ['噹——銅鑼又響了。你已經學會在第一聲鑼響時就站好。', '點完名，每個鬼都分到一塊木牌，上面寫著今天要去哪一層。'],
+    ['點卯的時候，你發現隊伍裡少了幾張熟面孔。', '他們的刑期滿了，被帶去了奈何橋。你看著空出來的位子，心裡有點羨慕。']
+  ];
+
+  async function rollCall(d, day) {
+    scene(`第 ${day} 天・清晨`, '民間信仰・鬼差點卯', 'radial-gradient(ellipse at 50% 90%, #3a0c08, #120303 60%, #050101)', 'fog',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <rect x="0" y="0" width="800" height="400" fill="#120808"/>
+        <rect x="300" y="60" width="200" height="44" fill="#2a0808" stroke="#c9a040" stroke-width="2"/>
+        <text x="400" y="83" font-size="22" fill="#e8c070" text-anchor="middle" dominant-baseline="middle" font-weight="bold" letter-spacing="6">陰司衙門</text>
+        <rect x="0" y="400" width="800" height="120" fill="#1e1010"/>
+        <g class="jbob"><line x1="560" y1="250" x2="560" y2="330" stroke="#8a6a3a" stroke-width="4"/>
+          <circle cx="560" cy="290" r="30" fill="#c9a040" stroke="#8a6a20" stroke-width="4"/><circle cx="560" cy="290" r="8" fill="#8a6a20"/></g>
+        ${imp(620, 470, 1.3, '#3a5a9a', true)}
+        <rect x="220" y="300" width="70" height="90" fill="#e8dcc0" stroke="#8a6a3a" stroke-width="3"/>
+        ${[0, 1, 2, 3, 4].map(i => `<line x1="232" y1="${318 + i * 14}" x2="278" y2="${318 + i * 14}" stroke="#5a3a1a" stroke-width="2"/>`).join('')}
+        ${imp(180, 470, 1.2, '#5a3a8a')}
+        ${sinners([[320, 500, .6], [380, 505, .6], [440, 500, .6], [500, 505, .6]])}
+        ${ghost(440, 500, .62)}
+      </svg>`);
+    gong();
+    const [a, b] = ROLLCALL[Math.min(day, ROLLCALL.length) - 1];
+    await say(a);
+    await say(b);
+    if (day === 1) await say(`「${d.name}！」　「……到。」`);
+  }
+
+  async function torture(lv, deeds, day, seen) {
+    hellScene(lv);
+    if (lv === 6 || lv === 16 || lv === 9) tone(90, 1.2, { type: 'sawtooth', gain: 0.03, slide: .7 });
+    const list = deeds.map(h => `「${h.choice}」`).join('、');
+    if (seen) {
+      await say(`今天，你又被押回了第 ${lv} 層，${HELL_LEVELS[lv - 1]}。同樣的刑罰，同樣的痛。`);
+      await say(`受刑的時候，你一直想起自己生前${list}的那一刻。`);
+    } else {
+      if (day === 1) await say('點完卯，牛頭馬面押著你去「上工」——也就是受刑。');
+      await say(`第 ${lv} 層，${HELL_LEVELS[lv - 1]}。因為你生前${list}——`);
+      await say(HELL_DESC[lv - 1]);
+      if (day === 1) await say('很痛，但是不會死——因為你早就已經死了。');
+    }
+  }
+
+  // 每天下午會遇到的事。選擇會改變刑期：-1 減少、+1 增加、0 不變
+  async function eMoney() {
+    scene('紙錢', '民間信仰・燒紙錢', 'radial-gradient(ellipse at 50% 0%, #4a2a08, #1a0804 55%, #050101)', 'money',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <ellipse cx="400" cy="0" rx="300" ry="90" fill="#ff9a30" opacity=".35" filter="url(#jbigglow)"/>
+        <rect x="0" y="440" width="800" height="80" fill="#1a0c08"/>
+        ${ghost(400, 470, 1.1)}
+        <g transform="translate(400 420)">${[0, 1, 2, 3].map(i => `<rect x="${-22 + i * 3}" y="${-i * 6}" width="44" height="26" fill="#e8c040" stroke="#a87a20"/><rect x="${-6 + i * 3}" y="${6 - i * 6}" width="12" height="12" fill="#c82a1a"/>`).join('')}</g>
+        ${imp(590, 470, 1.3, '#3a5a9a', true)}
+        ${hungryGhost(150, 470, 1)}${hungryGhost(230, 480, .85)}
+      </svg>`);
+    await say('中午，天上忽然飄下一大把黃色的紙片——是紙錢！');
+    await say('原來，陽間的家人在為你燒紙錢。民間相信，燒給亡者的紙錢，到了陰間就能拿來花。');
+    await say('一個鬼差湊過來，壓低聲音說：「有錢能使鬼推磨。分我一點，我讓你少受幾天罪。」');
+    await say('角落裡，幾個瘦巴巴的孤魂野鬼盯著你手上的錢——他們已經很多年沒有人祭拜了。');
+    const pick = await ask('你要怎麼用這筆錢？', ['💰 塞給鬼差，買通他', '🤲 分給沒人祭拜的孤魂野鬼', '🍵 自己去鬼市買碗熱湯']);
+    if (pick === 0) {
+      await say('鬼差收下錢，咧嘴一笑。可是當天晚上，判官就在帳簿上多記了一筆：「賄賂鬼差」。原來地府也是抓貪污的。');
+      return { sign: 1, note: '用家人燒的紙錢賄賂鬼差，被判官多記了一筆' };
+    }
+    if (pick === 1) {
+      await say('孤魂野鬼捧著紙錢，對你拜了又拜。判官在遠處看見了，提筆在帳簿上記了一行字。');
+      return { sign: -1, note: '把家人燒的紙錢分給了孤魂野鬼' };
+    }
+    await say('你在鬼市買了一碗熱湯。湯沒有什麼味道，但捧在手裡，總算暖了一點。');
+    return { sign: 0, note: '用紙錢在鬼市買了一碗熱湯' };
+  }
+
+  async function eFood() {
+    scene('放飯', '佛教《盂蘭盆經》・目連救母', 'radial-gradient(ellipse at 50% 90%, #3a1a08, #120604 60%, #050101)', 'embers',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <rect x="0" y="440" width="800" height="80" fill="#1a0c08"/>
+        <rect x="120" y="380" width="560" height="22" fill="#4a3220"/><rect x="140" y="400" width="14" height="50" fill="#3a2418"/><rect x="646" y="400" width="14" height="50" fill="#3a2418"/>
+        ${[220, 340, 460, 580].map(x => `<path d="M${x - 30},378 Q${x},404 ${x + 30},378Z" fill="#5a4a3a"/>`).join('')}
+        <g transform="translate(400 330)"><path d="M-36,0 Q0,40 36,0Z" fill="#5a4a3a" stroke="#8a7a6a"/>
+          <path class="jflame" d="M-18,0 Q-10,-30 0,-56 Q10,-30 18,0Z" fill="#ff7a1a"/><path class="jflame" style="animation-delay:.2s" d="M-8,0 Q-4,-16 0,-30 Q4,-16 8,0Z" fill="#ffd040"/></g>
+        ${ghost(400, 470, 1)}
+        ${hungryGhost(560, 460, 1.1)}${hungryGhost(220, 470, .9)}${hungryGhost(680, 480, .8)}
+        ${imp(110, 470, 1.1, '#2a6a5a')}
+      </svg>`);
+    await say('放飯的時間到了。鬼差提著一桶飯，倒進每個罪魂的碗裡。');
+    await say('你餓得發慌，捧起碗就往嘴裡扒——飯一碰到嘴唇，竟然「轟」地燒成了火炭！');
+    shake();
+    rumble();
+    await say('旁邊的老鬼苦笑：「沒用的。佛經裡說，目連的母親生前太貪心，死後成了餓鬼。目連捧飯給她，飯還沒進嘴就變成了火。」');
+    await say('「在這裡，只顧著自己吃的飯，是吃不下去的。」');
+    const pick = await ask('旁邊有一個瘦得只剩骨頭的餓鬼，碗裡什麼都沒有。', ['🍚 把你的飯讓給他', '😤 把他的空碗踢開，免得他跟你搶']);
+    if (pick === 0) {
+      await say('你把碗遞給他。奇怪的是，這一次飯沒有燒起來。他吃得狼吞虎嚥，你的肚子竟然也沒那麼餓了。');
+      return { sign: -1, note: '把飯讓給了更餓的餓鬼' };
+    }
+    await say('你踢開他的碗，又扒了一口飯——滿嘴都是火。那個餓鬼縮回角落，一句話也沒說。');
+    return { sign: 1, note: '欺負了一個餓鬼' };
+  }
+
+  async function eLabor() {
+    let grooves = '';
+    for (let i = 0; i < 10; i++) {
+      const a = i / 10 * Math.PI * 2;
+      grooves += `<line x1="400" y1="340" x2="${400 + Math.cos(a) * 150}" y2="${340 + Math.sin(a) * 40}" stroke="#55555a" stroke-width="3"/>`;
+    }
+    scene('鬼推磨', '民間俗語・有錢能使鬼推磨', 'radial-gradient(ellipse at 50% 90%, #4a1a0a, #160604 60%, #050101)', 'dust',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <rect x="0" y="440" width="800" height="80" fill="#1a0c08"/>
+        <ellipse cx="400" cy="400" rx="170" ry="46" fill="#5a5a60" stroke="#3a3a3e" stroke-width="4"/>
+        <rect x="230" y="340" width="340" height="60" fill="#6a6a70"/>
+        <ellipse cx="400" cy="340" rx="170" ry="46" fill="#7a7a80" stroke="#4a4a4e" stroke-width="4"/>${grooves}
+        <circle cx="400" cy="340" r="16" fill="#3a3a3e"/>
+        <line x1="400" y1="340" x2="640" y2="300" stroke="#8a6a40" stroke-width="12" stroke-linecap="round"/>
+        <g class="jbob">${ghost(600, 400, .9)}</g>
+        <g class="jbob" style="animation-delay:.5s">${ghost(660, 410, .8, '200,200,190')}</g>
+        ${imp(150, 470, 1.3, '#5a3a8a')}
+        <path d="M180,360 Q230,320 260,350" stroke="#3a2010" stroke-width="4" fill="none"/>
+      </svg>`);
+    rumble();
+    await say('下午是勞役時間。你被分去推石磨——這就是俗話說的「鬼推磨」。');
+    await say('石磨重得像一座山，要好幾個鬼一起推才轉得動。');
+    await say('跟你同一組的，是一個駝背的老鬼。他每推一步，腳都在發抖。');
+    const pick = await ask('鬼差走開去喝茶了，你要怎麼做？', ['💪 多出點力，讓老鬼輕鬆一點', '😴 趁機偷懶']);
+    if (pick === 0) {
+      await say('你把肩膀頂在木桿上，用盡全身的力氣推。老鬼喘了口氣，小聲說了句「謝謝」。');
+      await say('這是你來到地府以後，第一次有人跟你道謝。');
+      return { sign: -1, note: '推磨時幫老鬼多出了一份力' };
+    }
+    await say('你偷偷放開手。石磨一沉，老鬼被壓得跪在地上。');
+    await say('鬼差回來時剛好看見，「啪」的一鞭抽在你背上。');
+    return { sign: 1, note: '推磨時偷懶，害老鬼被石磨壓倒' };
+  }
+
+  async function eSutra(d) {
+    let lamps = '';
+    for (let i = 0; i < 9; i++) {
+      const x = 90 + i * 78, y = 400 + (i % 3) * 22;
+      lamps += `<g class="jbob" style="animation-delay:${i * .3}s"><ellipse cx="${x}" cy="${y}" rx="20" ry="8" fill="#f0a0b8"/>
+        <path d="M${x - 16},${y} Q${x - 10},${y - 22} ${x},${y - 26} Q${x + 10},${y - 22} ${x + 16},${y}Z" fill="#f8c8d8"/>
+        <circle cx="${x}" cy="${y - 10}" r="5" fill="#ffe080" filter="url(#jglow)"/></g>`;
+    }
+    const layer = scene('超度', '民間信仰・誦經超度、盂蘭盆會', 'radial-gradient(ellipse at 50% 0%, #6a4a10, #1a0c04 55%, #050202)', 'light',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <polygon points="330,0 470,0 560,520 240,520" fill="rgba(255,220,140,.18)"/>
+        <polygon points="370,0 430,0 470,520 330,520" fill="rgba(255,230,170,.18)"/>
+        <rect x="0" y="440" width="800" height="80" fill="#140804" opacity=".8"/>
+        ${lamps}
+        ${[0, 1, 2, 3, 4, 5, 6].map(i => `<text x="${330 + (i % 2) * 140}" y="${50 + i * 44}" font-size="22" fill="#ffe0a0" opacity=".6" text-anchor="middle">${'南無地藏王菩薩'[i]}</text>`).join('')}
+        <g class="gk">${ghost(400, 470, 1)}</g>
+        ${sinners([[230, 490, .6], [570, 490, .6], [650, 495, .55]])}
+      </svg>`);
+    [196, 196, 220, 196].forEach((f, i) => tone(f, 1, { gain: 0.04, type: 'triangle', delay: i * 0.7 }));
+    await say('傍晚，地府的上空忽然傳來一陣誦經聲，一道金光從上面照了下來。');
+    await say('是陽間的家人在寺廟裡為你誦經、點燈。民間相信，親人為亡者念的經，能減輕他在地獄受的苦。');
+    await say(`金光照在身上，暖暖的。你聽見有人輕輕念著：「${d.name}，${d.name}……」`);
+    const pick = await ask('你要怎麼做？', ['🙏 跪下來跟著念，誠心懺悔', '🙄 念經有什麼用，轉頭繼續發呆']);
+    if (pick === 0) {
+      layer.querySelector('.gk').setAttribute('filter', 'url(#jglow)');
+      chime();
+      await say('你跪下來，一句一句跟著念。念到後來，你哭了。');
+      await say('這是你第一次，真心為自己做過的事感到抱歉。');
+      return { sign: -1, note: '跟著家人的誦經聲，誠心懺悔' };
+    }
+    await say('金光慢慢暗了下去。家人的心意，你沒有接住。');
+    return { sign: 0, note: '家人為你誦經，你卻轉過頭去' };
+  }
+
+  async function eGhostFest(d) {
+    const worst = [...badDeeds(d)].sort((a, b) => a.karma - b.karma)[0];
+    const person = (x, s, c = '#1a1a24') => `<g transform="translate(${x} 470) scale(${s})"><circle cx="0" cy="-92" r="16" fill="${c}"/><path d="M-22,0 L-18,-70 Q0,-80 18,-70 L22,0Z" fill="${c}"/></g>`;
+    scene('中元節', '民間信仰・農曆七月十五、鬼門開', 'linear-gradient(#0a0c1c, #1c1a30 60%, #2a1a14)', 'stars',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+        <circle cx="640" cy="80" r="34" fill="#f8f0c0" filter="url(#jglow)"/>
+        <rect x="380" y="200" width="320" height="270" fill="#2a2420"/>
+        <polygon points="360,200 540,120 720,200" fill="#3a2a22"/>
+        <rect x="430" y="260" width="70" height="60" fill="#ffc870" filter="url(#jglow)"/><rect x="580" y="260" width="70" height="60" fill="#ffc870" opacity=".8"/>
+        ${lantern(420, 230, '#ff4a2a', '普')}${lantern(660, 230, '#ff4a2a', '渡')}
+        <rect x="150" y="390" width="230" height="16" fill="#8a2a1a"/><rect x="160" y="404" width="12" height="66" fill="#6a2010"/><rect x="358" y="404" width="12" height="66" fill="#6a2010"/>
+        ${[180, 220, 300, 340].map((x, i) => `<circle cx="${x}" cy="380" r="11" fill="${['#ff6a3a', '#ffd040', '#8ad050', '#ff6a3a'][i]}"/>`).join('')}
+        <rect x="250" y="370" width="30" height="20" fill="#c8a060"/>
+        ${[258, 265, 272].map((x, i) => `<line x1="${x}" y1="370" x2="${x}" y2="330" stroke="#c84a2a" stroke-width="2"/><path class="jsteam" style="animation-delay:${i * .7}s" d="M${x},328 q-5,-10 0,-20 q5,-10 0,-20" stroke="rgba(230,230,240,.6)" stroke-width="2" fill="none"/>`).join('')}
+        <rect x="0" y="470" width="800" height="50" fill="#14100c"/>
+        ${person(470, 1)}${person(540, .8)}${person(610, 1.05)}
+        ${ghost(110, 470, .95)}
+      </svg>`);
+    chime();
+    await say('今天是農曆七月十五，中元節。地府的鬼門大開，所有的鬼都可以回人間一趟。');
+    await say('你飄回了家。門口擺著一張供桌，上面有你最愛吃的菜，香爐裡的香冒著細細的煙。');
+    await say('家人雙手合十，對著供桌拜拜，嘴裡念著你的名字。他們看不見你，但你就站在他們旁邊。');
+    if (worst) await say(`你忽然想起那件事——${worst.stage}時，你「${worst.choice}」。這些年，你從來沒跟任何人道過歉。`);
+    const pick = await ask('天亮前就得回地府了。你要做什麼？', ['💭 托夢給家人，跟他們說對不起', '🍗 溜去偷吃隔壁人家的供品']);
+    if (pick === 0) {
+      await say('那天夜裡，你走進家人的夢裡，說出了那句生前一直說不出口的話。');
+      await say('家人在夢裡抱住了你：「沒關係，我們都知道。」');
+      return { sign: -1, note: '中元節回家，托夢跟家人道歉' };
+    }
+    await say('你偷吃了隔壁的供品，結果被人家的祖先追著打了三條街。');
+    await say('回到地府，判官已經在帳簿上等著你了。');
+    return { sign: 1, note: '中元節偷吃別人家的供品' };
+  }
+
+  const CELLMATES = [
+    '他生前放高利貸，逼得好幾戶人家家破人亡。',
+    '她生前總是在網路上匿名罵人，現在每天都要去拔舌地獄報到。',
+    '他生前是個貪官，收了一輩子的紅包。',
+    '她生前為了爭家產，跟親兄弟打了十年官司，到死都沒有和好。'
+  ];
+
+  async function eCellmate() {
+    scene('牢房夜談', '民間信仰・陰司地府', 'linear-gradient(#06080a, #0c1210 60%, #050605)', 'dust',
+      cellArt(`${ghost(300, 450, .9)}${ghost(560, 450, .85, '200,210,200')}`));
+    await say('夜裡，隔壁牢房的罪魂隔著鐵欄杆跟你說話。');
+    await say(CELLMATES[Math.floor(Math.random() * CELLMATES.length)]);
+    await say('「我在這裡待了三百年了，」他說，「家人早就忘了我。沒有人燒錢給我，也沒有人替我念經。」');
+    const pick = await ask('你要怎麼回答？', ['🤝 「我陪你聊聊吧。」', '🙈 翻過身假裝睡著']);
+    if (pick === 0) {
+      await say('你們聊了一整夜：聊人間的家，聊後悔的事，聊下輩子想當什麼樣的人。');
+      await say('天快亮時，他說：「謝謝你。三百年來，我第一次覺得自己還像個人。」');
+      return { sign: -1, note: '陪隔壁牢房的罪魂聊了一整夜' };
+    }
+    await say('你翻過身，背對著他。黑暗中，你聽見他一個人小聲地哭。');
+    return { sign: 0, note: '假裝沒聽見隔壁罪魂的話' };
+  }
+
+  const HELL_EVENTS = [eMoney, eFood, eLabor, eSutra, eGhostFest, eCellmate];
+  const NIGHT = [
+    '你縮在牢房的稻草堆上。地府的夜很冷，四面八方都是罪魂的哭聲。',
+    '你躺在稻草上，盯著窗外那顆綠色的月亮，想起了人間的家。',
+    '今晚很安靜。你閉上眼睛，第一次在地府睡著了。'
+  ];
+
+  async function night(day, ev, change) {
+    const layer = scene(`第 ${day} 天・夜晚`, '民間信仰・陰司地府', 'linear-gradient(#06080a, #0c1210 60%, #050605)', 'dust',
+      cellArt(`${ghost(400, 450, .9)}
+        <text class="nd" x="400" y="190" font-size="40" fill="#ffd0c0" text-anchor="middle" dominant-baseline="middle" font-weight="900" letter-spacing="4" filter="url(#jglow)">刑期 ${day} / ${hell.total - change} 天</text>`));
+    const nd = layer.querySelector('.nd');
+    await say(NIGHT[(day - 1) % NIGHT.length]);
+    if (change) {
+      nd.textContent = `刑期 ${day} / ${hell.total} 天`;
+      nd.setAttribute('fill', change < 0 ? '#9aff9a' : '#ff6a5a');
+      tone(change < 0 ? 660 : 140, .6, { gain: .04, type: change < 0 ? 'triangle' : 'sawtooth' });
+      await say(change < 0
+        ? `判官的帳簿上多了一行字：「${ev.note}」。你的刑期減少了 ${-change} 天。`
+        : `判官的帳簿上多了一行字：「${ev.note}」。你的刑期增加了 ${change} 天。`);
+    }
+    if (hell.total <= day) {
+      chime();
+      await say('半夜，鬼差打開了牢門：「判官說了，你的刑期提前滿了。出來吧。」');
+    }
+  }
+
+  async function sHellLife(d) {
+    const groups = new Map();
+    for (const h of badDeeds(d)) {
+      const lv = sinLevel(h);
+      if (!groups.has(lv)) groups.set(lv, []);
+      groups.get(lv).push(h);
+    }
+    const order = [...groups.keys()].sort((a, b) => a - b);
+    const events = shuffle(HELL_EVENTS);
+    const seen = new Set();
+    for (let day = 1; day <= HELL_LIVE_DAYS && day <= hell.total; day++) {
+      hell.lived = day;
+      dayCard(`第 ${day} 天`, `刑期 ${day} / ${hell.total} 天`, 'radial-gradient(ellipse at 50% 90%, #4a0c06, #120303 60%, #050101)', '#ff7a5a', 'embers');
+      tone(110, 1.4, { gain: .06, slide: .9 });
+      await wait(1500, true);
+      await rollCall(d, day);
+      if (order.length) {
+        const lv = order[(day - 1) % order.length];
+        await torture(lv, groups.get(lv), day, seen.has(lv));
+        seen.add(lv);
+      }
+      const ev = await events[day - 1](d);
+      const step = Math.max(1, Math.round(hell.total * 0.2));
+      const before = hell.total;
+      hell.total = Math.max(day, hell.total + ev.sign * step);
+      diary.push(`第 ${day} 天：${ev.note}`);
+      await night(day, ev, hell.total - before);
+    }
   }
 
   // ---------- 奈何橋：選擇要不要轉世 ----------
@@ -1413,17 +2050,16 @@
     if (!raf) raf = requestAnimationFrame(frame);
 
     // 天堂是永遠的安息；地獄刑滿後要走奈何橋，選擇喝不喝孟婆湯
-    const result = { choice: 'stay', hellDays: 0, depth: 0 };
-    if (d.realm === 'HELL') {
-      result.depth = hellDepth(d.karma);
-      result.hellDays = hellDays(d.karma);
-    }
+    const result = { choice: 'stay', hellDays: 0, depth: 0, diary: [] };
+    diary = [];
+    hell.total = hellDays(d.karma);
+    hell.lived = 0;
 
     const scenes = [sDeath, sWuchang, sGate, sRoad, sHome, sMirror, sJudge];
-    if (d.realm === 'HEAVEN') scenes.push(sGates, sReunion, sCity, sChoir, sStars, sRose);
-    else scenes.push(sHell, sMap, sTour, sLedger, sRise, sJizo, sBridge);
+    if (d.realm === 'HEAVEN') scenes.push(sGates, sMansion, sHeavenLife, sStars, sThousand, sRose);
+    else scenes.push(sHell, sMap, sLedger, sFengdu, sHellLife, sRise, sJizo, sBridge);
     // 每次都一樣的場景可以跳過；會因玩家選擇而不同的場景一定會播
-    const FIXED = new Set([sDeath, sWuchang, sGate, sRoad, sGates, sReunion, sCity, sChoir, sRose, sJizo]);
+    const FIXED = new Set([sDeath, sWuchang, sGate, sRoad, sGates, sThousand, sRose, sJizo]);
     const run = s => s(d);
 
     try {
@@ -1444,6 +2080,11 @@
       console.error(e);
     }
     inFixed = false;
+    result.diary = diary.slice();
+    if (d.realm === 'HELL') {
+      result.depth = hellDepth(d.karma);
+      result.hellDays = hell.total;
+    }
     root.classList.remove('on');
     await new Promise(r => setTimeout(r, 800));
     cancelAnimationFrame(raf);
@@ -1457,7 +2098,7 @@
   window.Journey = {
     /**
      * ending: { soul:{name, age, karma, realm}, verdict, history:[{stage, choice, karma}] }
-     * 回傳 { choice: 'reincarnate' | 'stay', hellDays, depth }（choice 只有下地獄的人才會選）
+     * 回傳 { choice: 'reincarnate' | 'stay', hellDays, depth, diary }（choice 只有下地獄的人才會選；diary 是死後每天做了什麼）
      */
     play: ending => play({
       name: ending.soul.name, age: ending.soul.age, karma: ending.soul.karma,
@@ -1470,7 +2111,8 @@
       resize();
       root.classList.add('on');
       if (!raf) raf = requestAnimationFrame(frame);
-      const fns = { sMirror, sGates, sReunion, sCity, sChoir, sStars, sRose, sMap, sLedger, sJizo, sBridge };
+      const fns = { sMirror, sGates, sMansion, sReunion, sCity, sChoir, sStars, sThousand, sRose, sMap, sLedger, sFengdu, sJizo, sBridge,
+        hFeast, hGarden, hFly, hEarth, hElysium, eMoney, eFood, eLabor, eSutra, eGhostFest, eCellmate };
       if (typeof what === 'number') hellScene(what);
       else fns[what](d).catch(() => {});
     }
