@@ -101,6 +101,12 @@
       @keyframes jpound { 0%, 100% { transform: translateY(-60px); } 55% { transform: translateY(40px); } 65% { transform: translateY(32px); } }
       #journey .jsaw { animation: jsaw 1s ease-in-out infinite alternate; }
       @keyframes jsaw { from { transform: translateX(-50px); } to { transform: translateX(50px); } }
+      #journey .ledger.hdays { overflow-y: hidden; font-size: 15px; }
+      #journey .ledger .hd { display: flex; gap: 12px; align-items: flex-start; padding: 7px 4px; border-bottom: 1px dashed #b8a070; animation: jrow .4s; }
+      #journey .ledger .hn { white-space: nowrap; color: #6a1a0a; min-width: 4.5em; }
+      #journey .ledger .hw { flex: 1; }
+      #journey .ledger .hw small { display: block; color: #7a5a3a; font-size: 13px; }
+      #journey .ledger .hk { color: #a01010; white-space: nowrap; }
       #journey .ledger .lr i { font-style: normal; font-size: 13px; color: #7a3a1a; white-space: nowrap; margin-left: auto; }
       @media (max-width: 600px) {
         #journey .jtext { font-size: 16px; padding: 14px 16px 20px; min-height: 84px; bottom: 16px; }
@@ -675,6 +681,16 @@
   }
 
   // ---------- 死後世界的共用工具 ----------
+  // 每一層的刑罰（短句，寫在服刑日記裡）
+  const HELL_PUNISH = ['被小鬼用鐵鉗拔出舌頭', '被大剪刀一根一根剪去手指', '被吊在長滿刀刃的鐵樹上', '被押到孽鏡前，看自己醜陋的原形',
+    '被關進蒸籠，受熱氣蒸烤', '被綁在燒得通紅的銅柱上', '赤著腳爬上插滿刀刃的山', '被丟在冰山上，凍得全身發紫',
+    '被丟進滾燙的油鍋裡炸', '被丟進牛坑，讓牛群來回踐踏', '被巨石壓住，一動也不能動', '被放進石臼，讓鐵杵舂打',
+    '被丟進翻滾的血池裡', '在枉死城裡和冤魂一起徘徊', '被綁在木架上受磔刑', '被推進噴發的火山口',
+    '被放進石磨裡磨', '被綁在木樁上受刀鋸之刑'];
+  // 下午的勞役，每天輪流
+  const HELL_CHORES = ['推石磨', '搬石頭修補奈何橋', '在忘川河邊撈落水的紙錢', '打掃閻羅殿的台階', '替判官磨墨、抄生死簿',
+    '在酆都城的街上掃紙灰', '幫孟婆劈柴燒湯', '替牛頭馬面磨鋼叉'];
+
   const HELL_DESC = [
     '生前搬弄是非、說謊騙人、出口傷人的人，會在這裡被小鬼用鐵鉗拔出舌頭。',
     '剪斷別人希望、拆散他人緣分的人，會在這裡被巨大的剪刀剪去手指。',
@@ -724,6 +740,19 @@
   }
 
   const goodDeeds = d => d.history.filter(h => h.karma > 0);
+  /** 把壞事依地獄層數分組，回傳 { groups: Map(層 → 壞事), order: 由淺到深的層數 } */
+  function sinGroups(d) {
+    const groups = new Map();
+    for (const h of d.history.filter(h => h.karma < 0)) {
+      const lv = sinLevel(h);
+      if (!groups.has(lv)) groups.set(lv, []);
+      groups.get(lv).push(h);
+    }
+    return { groups, order: [...groups.keys()].sort((a, b) => a - b) };
+  }
+  /** 第幾天要去哪一層（你的罪輪流受刑） */
+  const levelOfDay = (order, day) => order[(day - 1) % order.length];
+  const sinList = deeds => deeds.map(h => `「${h.choice}」`).join('、');
   const badDeeds = d => d.history.filter(h => h.karma < 0);
   // 和模擬器的規則一致：業力低於 0 就下地獄，每天平均贖罪 3 點，回到 0 就刑滿
   const hellDays = karma => Math.max(1, Math.ceil(-karma / 3));
@@ -1294,27 +1323,49 @@
     await say('「不過，」判官抬起頭，「你在地府怎麼過日子，也會記進這本帳裡。」');
   }
 
+  /** 剩下的刑期：每一天都寫進服刑日記 */
   async function sRise(d) {
-    const depth = hellDepth(d.karma), { total, lived } = hell;
+    const { total, lived } = hell;
     if (total <= lived) return;
-    const layer = scene('贖罪', '民間信仰・十八層地獄', 'radial-gradient(ellipse at 50% 92%, #7a1808, #220404 50%, #050101)', 'embers',
-      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
-        ${funnelRings()}
-        <text class="rl" x="400" y="60" font-size="46" fill="#ff7a5a" text-anchor="middle" dominant-baseline="middle" font-weight="900" letter-spacing="8" filter="url(#jglow)">第 ${depth} 層</text>
-        <text class="rd" x="400" y="108" font-size="20" fill="#ffd0c0" text-anchor="middle" dominant-baseline="middle"></text>
-        <g class="rg">${ghost(400, 440, .9)}</g>
-      </svg>`);
-    const rl = layer.querySelector('.rl'), rd = layer.querySelector('.rd'), rg = layer.querySelector('.rg');
+    const { groups, order } = sinGroups(d);
     const k0 = Math.round(d.karma * (1 - lived / total));
-    await say(`剩下的 ${total - lived} 天，日子就這樣重複著：點卯、受刑、勞役、睡覺。`);
-    show('每受一天刑，罪就輕了一點……');
-    await animate(Math.min(6500, 2500 + (total - lived) * 200), t => {
-      rl.textContent = `第 ${Math.max(1, Math.round(depth - (depth - 1) * t))} 層`;
-      rd.textContent = `第 ${Math.round(lived + (total - lived) * t)} 天　業力 ${fmt(Math.round(k0 * (1 - t)))}`;
-      rg.setAttribute('transform', `translate(0 ${-t * 250})`);
-    });
+    const layer = scene('服刑日記', '民間信仰・十八層地獄', 'radial-gradient(circle at 50% 40%, #2a1410, #080303 70%)', 'embers',
+      `<svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
+        <rect x="90" y="16" width="620" height="488" rx="6" fill="#e8dcc0" stroke="#8a6a3a" stroke-width="6"/>
+        <foreignObject x="108" y="30" width="584" height="462"><div xmlns="http://www.w3.org/1999/xhtml" class="ledger hdays"></div></foreignObject>
+      </svg>`);
+    const box = layer.querySelector('.ledger');
+    box.innerHTML = `<div class="lt">${esc(d.name)}・服刑日記</div>`;
+    await say(`接下來還有 ${total - lived} 天。判官說，每一天受了什麼刑、做了什麼工，都要一筆一筆記下來。`);
+    show('一天一天記下去……（點一下可以加快）');
+    for (let day = lived + 1; day <= total; day++) {
+      const t = (day - lived) / (total - lived);
+      const karma = Math.round(k0 * (1 - t));
+      const chore = HELL_CHORES[(day - 1) % HELL_CHORES.length];
+      let what = '在牢房裡反省', why = '', note = '在牢房裡反省；';
+      if (order.length) {
+        const lv = levelOfDay(order, day);
+        note = `在第 ${lv} 層${HELL_LEVELS[lv - 1]}，${HELL_PUNISH[lv - 1]}（因為${sinList(groups.get(lv))}）；`;
+        what = `第 ${lv} 層・${HELL_LEVELS[lv - 1]}：${HELL_PUNISH[lv - 1]}`;
+        why = `因為${sinList(groups.get(lv))}`;
+      }
+      const row = document.createElement('div');
+      row.className = 'hd';
+      row.innerHTML = `<b class="hn">第 ${day} 天</b><div class="hw"><div>${esc(what)}</div>
+        <small>${esc(why)}${why ? '　' : ''}下午：${esc(chore)}</small></div><b class="hk">${fmt(karma)}</b>`;
+      box.appendChild(row);
+      box.scrollTop = box.scrollHeight;
+      diary.push(`第 ${day} 天：${note}下午${chore}`);
+      tone(150 + t * 300, 0.25, { type: 'square', gain: 0.02 });
+      await wait(day === total ? 600 : 1100, true);
+    }
+    const sum = document.createElement('div');
+    sum.className = 'ls';
+    sum.innerHTML = `共服刑 <b>${total}</b> 天　業力 <b>+0</b>`;
+    box.appendChild(sum);
+    box.scrollTop = box.scrollHeight;
     chime();
-    await say(`第 ${total} 天，你的業力終於回到了 0。刑期滿了。`);
+    await say(`第 ${total} 天晚上，你的業力終於回到了 0。刑期滿了。`);
   }
 
   async function sJizo() {
@@ -1746,7 +1797,7 @@
   async function torture(lv, deeds, day, seen) {
     hellScene(lv);
     if (lv === 6 || lv === 16 || lv === 9) tone(90, 1.2, { type: 'sawtooth', gain: 0.03, slide: .7 });
-    const list = deeds.map(h => `「${h.choice}」`).join('、');
+    const list = sinList(deeds);
     if (seen) {
       await say(`今天，你又被押回了第 ${lv} 層，${HELL_LEVELS[lv - 1]}。同樣的刑罰，同樣的痛。`);
       await say(`受刑的時候，你一直想起自己生前${list}的那一刻。`);
@@ -1756,6 +1807,7 @@
       await say(HELL_DESC[lv - 1]);
       if (day === 1) await say('很痛，但是不會死——因為你早就已經死了。');
     }
+    await say(`今天的刑罰：${HELL_PUNISH[lv - 1]}，從清晨一直到中午。`);
   }
 
   // 每天下午會遇到的事。選擇會改變刑期：-1 減少、+1 增加、0 不變
@@ -1966,13 +2018,7 @@
   }
 
   async function sHellLife(d) {
-    const groups = new Map();
-    for (const h of badDeeds(d)) {
-      const lv = sinLevel(h);
-      if (!groups.has(lv)) groups.set(lv, []);
-      groups.get(lv).push(h);
-    }
-    const order = [...groups.keys()].sort((a, b) => a - b);
+    const { groups, order } = sinGroups(d);
     const events = shuffle(HELL_EVENTS);
     const seen = new Set();
     for (let day = 1; day <= HELL_LIVE_DAYS && day <= hell.total; day++) {
@@ -1981,16 +2027,19 @@
       tone(110, 1.4, { gain: .06, slide: .9 });
       await wait(1500, true);
       await rollCall(d, day);
+      let morning = '';
       if (order.length) {
-        const lv = order[(day - 1) % order.length];
+        const lv = levelOfDay(order, day);
         await torture(lv, groups.get(lv), day, seen.has(lv));
         seen.add(lv);
+        morning = `在第 ${lv} 層${HELL_LEVELS[lv - 1]}，${HELL_PUNISH[lv - 1]}（因為${sinList(groups.get(lv))}）；`;
       }
       const ev = await events[day - 1](d);
       const step = Math.max(1, Math.round(hell.total * 0.2));
       const before = hell.total;
       hell.total = Math.max(day, hell.total + ev.sign * step);
-      diary.push(`第 ${day} 天：${ev.note}`);
+      const diff = hell.total - before;
+      diary.push(`第 ${day} 天：${morning}下午${ev.note}${diff ? `（刑期${diff < 0 ? '減少' : '增加'} ${Math.abs(diff)} 天）` : ''}`);
       await night(day, ev, hell.total - before);
     }
   }
@@ -2111,8 +2160,9 @@
       resize();
       root.classList.add('on');
       if (!raf) raf = requestAnimationFrame(frame);
-      const fns = { sMirror, sGates, sMansion, sReunion, sCity, sChoir, sStars, sThousand, sRose, sMap, sLedger, sFengdu, sJizo, sBridge,
+      const fns = { sMirror, sRise, sGates, sMansion, sReunion, sCity, sChoir, sStars, sThousand, sRose, sMap, sLedger, sFengdu, sJizo, sBridge,
         hFeast, hGarden, hFly, hEarth, hElysium, eMoney, eFood, eLabor, eSutra, eGhostFest, eCellmate };
+      if (what === 'sRise') { hell.total = hellDays(d.karma); hell.lived = 3; diary = []; }
       if (typeof what === 'number') hellScene(what);
       else fns[what](d).catch(() => {});
     }
